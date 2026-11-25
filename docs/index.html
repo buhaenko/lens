@@ -1,0 +1,594 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lens — read & translate any text on your Mac screen</title>
+<meta name="description" content="Lens is a free, open-source Mac menu bar app: select any text on screen — a video, an image, a PDF, a game — and read it translated. Recognition and translation run on-device.">
+<link rel="canonical" href="https://buhaenko.github.io/lens/">
+<meta name="theme-color" content="#08111a">
+<meta name="color-scheme" content="dark">
+<link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
+<link rel="icon" type="image/png" sizes="64x64" href="favicon.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Lens">
+<meta property="og:title" content="Lens — read & translate any text on your Mac screen">
+<meta property="og:description" content="Lens is a free, open-source Mac menu bar app: select any text on screen — a video, an image, a PDF, a game — and read it translated. Recognition and translation run on-device.">
+<meta property="og:url" content="https://buhaenko.github.io/lens/">
+<meta property="og:image" content="https://buhaenko.github.io/lens/og.png">
+<meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Lens — read & translate any text on your Mac screen">
+<meta name="twitter:description" content="Lens is a free, open-source Mac menu bar app: select any text on screen — a video, an image, a PDF, a game — and read it translated. Recognition and translation run on-device.">
+<meta name="twitter:image" content="https://buhaenko.github.io/lens/og.png">
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "SoftwareApplication", "name": "Lens", "operatingSystem": "macOS 15+", "applicationCategory": "UtilitiesApplication", "description": "Lens is a free, open-source Mac menu bar app: select any text on screen — a video, an image, a PDF, a game — and read it translated. Recognition and translation run on-device.", "url": "https://buhaenko.github.io/lens/", "downloadUrl": "https://github.com/buhaenko/lens/releases/latest/download/Lens.dmg", "softwareVersion": "1.0.0", "fileSize": "1.3 MB", "license": "https://opensource.org/licenses/MIT", "isAccessibleForFree": true, "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}, "author": {"@type": "Person", "name": "Serhii Buhaienko", "url": "https://github.com/buhaenko"}}</script>
+<style>
+  :root { --bg: #08111a; --ink: #eef5fa; --muted: #98a8b6; --faint: #7d8d9b; --line: rgba(255,255,255,.08);
+          --blue: #2b8cff; --teal: #19c2b0; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--ink); font: 16px/1.55 -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
+         -webkit-font-smoothing: antialiased; overflow-x: hidden;
+         display: flex; flex-direction: column; min-height: 100svh; }
+  body::before { content: ""; position: fixed; inset: -20vh -20vw auto auto; width: 80vw; height: 80vh; pointer-events: none;
+                 background: radial-gradient(closest-side, rgba(43,140,255,.26), transparent 70%); filter: blur(20px); z-index: -1; }
+  body::after { content: ""; position: fixed; inset: auto auto -30vh -20vw; width: 70vw; height: 70vh; pointer-events: none;
+                background: radial-gradient(closest-side, rgba(25,194,176,.16), transparent 70%); filter: blur(20px); z-index: -1; }
+  .wrap { max-width: 880px; margin: 0 auto; padding: 0 24px; }
+  a { color: inherit; }
+
+  /* fake menu bar */
+  .menubar { flex: none; position: relative; z-index: 5; height: 32px; display: flex; align-items: center; justify-content: flex-end; gap: 18px;
+             padding: 0 18px; background: rgba(12,20,30,.6); backdrop-filter: blur(24px) saturate(1.4); -webkit-backdrop-filter: blur(24px) saturate(1.4);
+             border-bottom: 1px solid var(--line); font-size: 13px; color: #d6e2ec; }
+  .menubar .left { margin-right: auto; display: flex; align-items: center; gap: 18px; font-weight: 600; }
+  .menubar .left img { width: 16px; height: 16px; }
+  .menubar .left span:not(:first-child) { font-weight: 400; color: #b0c0cc; }
+  .mbicon { width: 24px; height: 20px; display: grid; place-items: center; border-radius: 5px; transition: background .2s; }
+  .mbicon.flash { background: rgba(255,255,255,.16); }
+  html, body { height: 100%; }
+  :root { --grad: linear-gradient(90deg, #9fcbff, #86ecdc); }
+
+  /* one screen: pitch on the left, demo on the right */
+  main { flex: 1; width: 100%; max-width: 1240px; margin: 0 auto; padding: 32px 40px;
+         display: grid; grid-template-columns: minmax(0, .85fr) minmax(0, 1.15fr); gap: 56px; align-items: center; }
+  .brand { display: flex; align-items: center; gap: 12px; font: 700 20px/1 ui-rounded, -apple-system, sans-serif; }
+  .brand img { width: 52px; height: 52px; filter: drop-shadow(0 10px 24px rgba(43,140,255,.45)); }
+  h1 { margin-top: 26px; font: 700 clamp(36px, 4.6vw, 56px)/1.04 ui-rounded, -apple-system, sans-serif; letter-spacing: -.03em; }
+  h1 span { background: linear-gradient(90deg, #8cc4ff, #7ee8d9); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .lead { margin-top: 16px; max-width: 460px; color: var(--muted); font-size: 17.5px; }
+
+  .cmd { margin-top: 30px; display: flex; align-items: center; gap: 10px; border-radius: 14px; padding: 7px 7px 7px 16px;
+         background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.1); }
+  .cmd code { flex: 1; min-width: 0; overflow-x: auto; white-space: nowrap; scrollbar-width: none; font: 500 13.5px/1.4 ui-monospace, "SF Mono", Menlo, monospace; color: #dde8f0; }
+  .cmd code::before { content: "$ "; color: var(--faint); }
+  .cmd button { border: 0; cursor: pointer; border-radius: 10px; padding: 10px 16px; color: #fff; font: 600 13.5px -apple-system, sans-serif;
+                background: linear-gradient(135deg, var(--blue), var(--teal)); box-shadow: 0 8px 20px -8px rgba(43,140,255,.7); }
+  .meta { margin-top: 10px; color: var(--faint); font-size: 13.5px; }
+  .meta a { color: var(--muted); }
+  .notmac { display: none; margin-top: 12px; padding: 10px 14px; border-radius: 12px; font-size: 14px;
+            background: rgba(255,255,255,.06); border: 1px solid var(--line); color: var(--muted); }
+
+  /* numbers */
+  .stats { margin-top: 30px; display: flex; gap: 34px; }
+  .stat b { display: block; font: 700 30px/1 ui-rounded, -apple-system, sans-serif; letter-spacing: -.02em;
+            background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .stat > span { display: block; margin-top: 7px; color: var(--faint); font-size: 13px; }
+  .stat.hero b { font-size: 44px; }
+
+
+  /* ───── interactive demo ───── */
+  .demo { min-width: 0; text-align: left; }
+  .demo-bar { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 12px; flex-wrap: wrap; }
+  .scenes { display: flex; gap: 6px; padding: 4px; border-radius: 12px; background: rgba(255,255,255,.05); border: 1px solid var(--line); }
+  .scenes button { border: 0; background: none; color: var(--muted); font: 600 13px -apple-system, sans-serif; padding: 7px 12px; border-radius: 9px; cursor: pointer; }
+  .scenes button.on { background: rgba(255,255,255,.12); color: var(--ink); }
+  .scanbtn { display: inline-flex; align-items: center; gap: 7px; border: 0; cursor: pointer; border-radius: 10px; padding: 9px 15px; color: #fff;
+             font: 600 13.5px -apple-system, sans-serif; background: linear-gradient(135deg, var(--blue), var(--teal)); box-shadow: 0 8px 20px -8px rgba(43,140,255,.7); }
+  .screen { position: relative; height: clamp(300px, 52vh, 420px); border-radius: 18px; overflow: hidden; border: 1px solid rgba(255,255,255,.1);
+            box-shadow: 0 30px 80px -30px rgba(0,0,0,.8); user-select: none; -webkit-user-select: none; touch-action: pan-y; }
+  .screen.scanning { cursor: crosshair; touch-action: none; }
+  .view { position: absolute; inset: 0; opacity: 0; visibility: hidden; transition: opacity .25s; }
+  .view.on { opacity: 1; visibility: visible; }
+  /* a window, macOS-style */
+  .win { position: absolute; inset: 0; display: flex; flex-direction: column; }
+  .chrome { flex: none; height: 34px; display: flex; align-items: center; gap: 12px; padding: 0 12px; background: #24262b; border-bottom: 1px solid #000; }
+  .lights { display: flex; gap: 7px; } .lights i { width: 11px; height: 11px; border-radius: 50%; background: #ff5f57; }
+  .lights i:nth-child(2) { background: #febc2e; } .lights i:nth-child(3) { background: #28c840; }
+  .url { flex: 1; max-width: 340px; margin: 0 auto; height: 22px; border-radius: 6px; background: #17181c; color: #8b9096;
+         font: 500 11.5px/22px -apple-system, sans-serif; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 10px; }
+  .chrome .title { flex: 1; text-align: center; color: #b9bdc3; font: 600 12px/1 -apple-system, sans-serif; margin-right: 50px; }
+
+  /* ▶ video page */
+  .video .page { flex: 1; min-height: 0; display: flex; flex-direction: column; background: #0f0f0f; padding: 12px 14px 0; gap: 10px; }
+  .player { position: relative; flex: 1; min-height: 0; border-radius: 10px; overflow: hidden;
+            background: linear-gradient(180deg, #0b1630 0%, #1b2450 45%, #c0563c 78%, #2a1414 100%); }
+  .player .city { position: absolute; left: 0; right: 0; bottom: 0; height: 46%;
+                  background: linear-gradient(90deg, #0a0b12 0 7%, transparent 7% 9%, #0d0e16 9% 17%, transparent 17% 19%, #0a0b12 19% 24%, transparent 24% 27%, #0e0f18 27% 40%, transparent 40% 42%,
+                              #0a0b12 42% 49%, transparent 49% 51%, #0d0e16 51% 63%, transparent 63% 65%, #0a0b12 65% 76%, transparent 76% 78%, #0e0f18 78% 90%, transparent 90% 92%, #0a0b12 92%); 
+                  clip-path: polygon(0 40%, 7% 40%, 7% 70%, 9% 70%, 9% 20%, 17% 20%, 17% 60%, 19% 60%, 19% 35%, 24% 35%, 24% 75%, 27% 75%, 27% 0, 31% 0, 31% 8%, 40% 8%, 40% 65%, 42% 65%, 42% 30%, 49% 30%,
+                                     49% 70%, 51% 70%, 51% 15%, 63% 15%, 63% 55%, 65% 55%, 65% 25%, 76% 25%, 76% 60%, 78% 60%, 78% 10%, 90% 10%, 90% 50%, 92% 50%, 92% 35%, 100% 35%, 100% 100%, 0 100%); }
+  .player .tower { position: absolute; left: 33.5%; bottom: 40%; width: 3px; height: 34%; background: #0a0b12; }
+  .player .tower::before { content: ""; position: absolute; left: -9px; top: 22%; width: 21px; height: 21px; border-radius: 50%; background: #0a0b12; }
+  .cc { position: absolute; left: 50%; bottom: 48px; transform: translateX(-50%); width: max-content; max-width: 90%; text-align: center;
+        padding: 3px 10px; border-radius: 4px; background: rgba(8,8,8,.75); color: #fff; font: 500 19px/1.45 -apple-system, "Roboto", sans-serif; }
+  .controls { position: absolute; left: 0; right: 0; bottom: 0; padding: 0 12px 8px; background: linear-gradient(transparent, rgba(0,0,0,.6)); }
+  .progress { height: 3px; border-radius: 2px; background: rgba(255,255,255,.25); margin-bottom: 8px; }
+  .progress i { display: block; position: relative; width: 38%; height: 100%; border-radius: 2px; background: #f03; }
+  .progress i::after { content: ""; position: absolute; right: -6px; top: -4.5px; width: 12px; height: 12px; border-radius: 50%; background: #f03; }
+  .ctl { display: flex; align-items: center; gap: 14px; color: #fff; font: 500 12px/1 -apple-system, sans-serif; }
+  .ctl svg { width: 18px; height: 18px; fill: #fff; } .ctl .sp { margin-left: auto; }
+  .ctl .cc-on { padding: 1px 4px; border-radius: 3px; border: 1.5px solid #fff; font-weight: 700; font-size: 10px; box-shadow: inset 0 -2px 0 #f03; }
+  .meta-v { flex: none; padding-bottom: 12px; color: #f1f1f1; font-family: -apple-system, "Roboto", sans-serif; }
+  .meta-v .vt { font-size: 15.5px; font-weight: 700; line-height: 1.3; width: max-content; max-width: 100%; }
+  .meta-v .row { display: flex; align-items: center; gap: 10px; margin-top: 8px; font-size: 12.5px; }
+  .meta-v .av { width: 30px; height: 30px; border-radius: 50%; background: linear-gradient(135deg, #ffb36b, #e5527a); }
+  .meta-v .ch b { display: block; font-size: 13px; } .meta-v .ch small { color: #aaa; font-size: 11.5px; }
+  .meta-v .subbtn { margin-left: 6px; padding: 7px 13px; border-radius: 99px; background: #f1f1f1; color: #0f0f0f; font-weight: 600; font-size: 12.5px; }
+  .meta-v .views { margin-left: auto; color: #aaa; }
+
+  /* 📄 PDF in a viewer */
+  .pdf .desk { flex: 1; min-height: 0; background: #3a3c42; display: grid; place-items: center; padding: 18px; overflow: hidden; }
+  .pdf .sheet { width: min(440px, 100%); background: #fff; color: #1d1d1f; border-radius: 2px; padding: 26px 30px 30px; box-shadow: 0 10px 30px rgba(0,0,0,.45);
+                font: 400 13.5px/1.55 "Helvetica Neue", Arial, sans-serif; }
+  .pdf .sender { font-size: 11px; color: #666; letter-spacing: .02em; width: max-content; }
+  .pdf .subj { margin-top: 16px; font-size: 16px; font-weight: 700; width: max-content; }
+  .pdf .body { margin-top: 10px; }
+  .pdf .sign { margin-top: 16px; color: #555; font-size: 12.5px; }
+  .pdf .crest { float: right; width: 34px; height: 34px; border-radius: 6px; background: repeating-linear-gradient(180deg, #111 0 33%, #d00 33% 66%, #fc0 66% 100%); opacity: .85; }
+  /* game */
+  .game { background: radial-gradient(120% 80% at 50% 0%, #26306b 0%, #0d1030 60%, #070818 100%); }
+  .game .stars { position: absolute; inset: 0; background-image: radial-gradient(1.5px 1.5px at 20% 30%, #fff, transparent), radial-gradient(1px 1px at 70% 20%, #fff, transparent),
+      radial-gradient(1.5px 1.5px at 40% 60%, #cfe, transparent), radial-gradient(1px 1px at 85% 55%, #fff, transparent), radial-gradient(1px 1px at 10% 70%, #fff, transparent); opacity: .7; }
+  .game .door { position: absolute; left: 50%; top: 34px; width: 96px; height: 150px; transform: translateX(-50%); border-radius: 48px 48px 6px 6px;
+                background: radial-gradient(circle at 50% 40%, #fff6c9, #ffcf6b 40%, #c97a2b 75%); box-shadow: 0 0 60px rgba(255,200,100,.55); }
+  .game .dialog { position: absolute; left: 20px; right: 20px; bottom: 20px; padding: 16px 18px 14px; border-radius: 10px; background: rgba(10,12,40,.92);
+                  border: 2px solid #d9dcff; box-shadow: 0 0 0 3px #0a0c28; color: #f2f3ff; font: 500 17px/1.6 "Hiragino Sans", "Hiragino Kaku Gothic ProN", sans-serif; }
+  .game .who { position: absolute; top: -14px; left: 14px; padding: 2px 10px; background: #d9dcff; color: #0a0c28; border-radius: 4px; font-size: 13px; font-weight: 700; }
+  .game .choices { display: flex; gap: 22px; margin-top: 8px; font-size: 15px; color: #c9ccf5; width: max-content; }
+  /* error */
+  .error { background: radial-gradient(100% 100% at 30% 20%, #3b4d7a, #1b2238 70%); }
+  .error .alert { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: 300px; padding: 22px 20px 16px; border-radius: 14px; text-align: center;
+                  background: rgba(40,42,48,.94); border: 1px solid rgba(255,255,255,.12); box-shadow: 0 24px 60px rgba(0,0,0,.55); color: #e9eaee;
+                  font: 400 13px/1.45 -apple-system, sans-serif; }
+  .error .alert b { display: inline-block; margin-bottom: 4px; font-size: 13.5px; }
+  .error .aicon { width: 46px; height: 46px; margin: 0 auto 12px; border-radius: 12px; display: grid; place-items: center; font: 800 26px -apple-system, sans-serif;
+                  color: #1b1b1b; background: linear-gradient(#ffd34f, #f5a623); }
+  .error .abtns { display: flex; gap: 8px; margin-top: 16px; }
+  .error .abtns span { flex: 1; padding: 6px 0; border-radius: 7px; background: rgba(255,255,255,.12); font-weight: 500; }
+  .error .abtns .primary { background: #2f7cf6; color: #fff; }
+  /* scanning UI */
+  .veil { position: absolute; inset: 0; background: rgba(0,0,0,.28); opacity: 0; pointer-events: none; transition: opacity .15s; }
+  .screen.scanning .veil { opacity: 1; }
+  .sel { position: absolute; display: none; border: 1px solid rgba(255,255,255,.95); border-radius: 3px; box-shadow: 0 0 0 9999px rgba(0,0,0,.28); }
+  .screen.scanning.dragging .veil { opacity: 0; }
+  .toast { position: absolute; left: 50%; top: 16px; transform: translate(-50%, -8px); padding: 8px 14px; border-radius: 99px; font-size: 13px; color: #fff;
+           background: rgba(20,24,30,.9); border: 1px solid rgba(255,255,255,.12); opacity: 0; pointer-events: none; transition: opacity .2s, transform .2s; white-space: nowrap; }
+  .toast.on { opacity: 1; transform: translate(-50%, 0); }
+  .lens-pop { position: absolute; margin: 0; width: 360px; max-width: calc(100% - 24px); opacity: 0; transform: translateY(6px) scale(.98);
+              pointer-events: none; transition: opacity .16s, transform .16s; z-index: 3; }
+  .lens-pop.on { opacity: 1; transform: none; pointer-events: auto; }
+  .lens-pop .trans { min-height: 0; }
+  .lens-pop { background: rgba(28,32,38,.95); }
+  .skel { display: grid; gap: 9px; padding: 3px 0; }
+  .skel i { display: block; height: 12px; border-radius: 5px; background: linear-gradient(90deg, rgba(255,255,255,.08) 0%, rgba(255,255,255,.2) 50%, rgba(255,255,255,.08) 100%);
+            background-size: 220% 100%; animation: shimmer 1.15s linear infinite; }
+  @keyframes shimmer { from { background-position: 110% 0; } to { background-position: -110% 0; } }
+  .scanpulse { animation: pulse 1.2s ease-out 2; }
+  @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(43,140,255,.7); } 100% { box-shadow: 0 0 0 14px rgba(43,140,255,0); } }
+  @media (max-width: 640px) {
+    .screen { height: 340px; }
+    .cc { font-size: 15px; bottom: 42px; } .meta-v .views, .meta-v .ch small { display: none; } .pdf .sheet { padding: 18px 18px 22px; font-size: 12.5px; } .game .dialog { font-size: 14.5px; } .error .alert { width: 250px; }
+    .scenes button { padding: 7px 9px; font-size: 12.5px; }
+  }
+
+  /* the popup, recreated */
+  .scene { position: relative; border-radius: 20px; padding: 30px 28px 28px; background: rgba(255,255,255,.035); border: 1px solid var(--line); }
+  .source { font: 500 21px/1.5 ui-serif, Georgia, serif; color: #dfe9f1; }
+  .source mark { background: rgba(43,140,255,.12); color: inherit; outline: 1.5px solid rgba(140,196,255,.8); outline-offset: 4px; border-radius: 3px; }
+  .popup { margin-top: 26px; max-width: 440px; background: rgba(36,42,50,.82); color: #f3f6f8; border-radius: 16px; padding: 16px;
+           backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); box-shadow: 0 24px 60px -14px rgba(0,0,0,.6);
+           border: 1px solid rgba(255,255,255,.09); font-size: 15px; }
+  .pills { display: flex; gap: 4px; align-items: center; font: 700 11px/1 ui-rounded, -apple-system, sans-serif; color: #93a1ad; }
+  .pills span { padding: 4px 7px; border-radius: 99px; cursor: pointer; transition: background .15s, color .15s; }
+  .pills span.on { background: rgba(255,255,255,.14); color: #fff; }
+  .pills .from, .pills .arrow { cursor: default; }
+  .pills .arrow { color: #5d6b77; padding: 0 2px; }
+  .orig { margin: 12px 0; color: #a1adb7; font-size: 12.5px; }
+  .popup hr { border: 0; border-top: 1px solid rgba(255,255,255,.09); }
+  .trans { margin-top: 12px; font-size: 16px; line-height: 1.5; min-height: 48px; transition: opacity .2s; white-space: pre-line; }
+  .hints { margin-top: 12px; display: flex; gap: 14px; font: 600 10.5px/1 ui-rounded, -apple-system, sans-serif; color: #6c7883; }
+  .hints b { background: rgba(255,255,255,.07); padding: 2px 5px; border-radius: 4px; margin-right: 4px; font-weight: 600; }
+  .caption { margin-top: 14px; color: var(--muted); font-size: 15px; text-align: center; }
+  .kbd { font: 600 13px/1 ui-rounded, -apple-system, sans-serif; padding: 3px 7px; border-radius: 6px; background: rgba(255,255,255,.08);
+         border: 1px solid rgba(255,255,255,.1); border-bottom-width: 2px; color: var(--ink); white-space: nowrap; }
+
+  footer { flex: none; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 10px; padding: 16px 40px;
+           border-top: 1px solid var(--line); color: var(--faint); font-size: 13.5px; }
+  footer a, footer button { color: var(--muted); text-decoration: none; }
+  footer a:hover, footer button:hover { color: var(--ink); }
+  footer nav { display: flex; gap: 18px; flex-wrap: wrap; }
+  footer button { border: 0; background: none; font: inherit; cursor: pointer; }
+
+  /* “Is it safe?” */
+  dialog { margin: auto; width: min(560px, calc(100% - 32px)); max-height: min(640px, calc(100svh - 48px)); overflow: auto; padding: 28px 28px 20px;
+           border-radius: 20px; background: #0f1922; color: var(--ink); border: 1px solid rgba(255,255,255,.1); box-shadow: 0 40px 100px rgba(0,0,0,.6); }
+  dialog::backdrop { background: rgba(2,6,10,.6); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
+  dialog h2 { font: 700 24px/1.2 ui-rounded, -apple-system, sans-serif; margin-bottom: 10px; }
+  dialog .x { position: absolute; top: 18px; right: 18px; width: 30px; height: 30px; border-radius: 50%; border: 0; cursor: pointer;
+              background: rgba(255,255,255,.08); color: var(--muted); font-size: 16px; }
+  dialog details { border-top: 1px solid var(--line); padding: 14px 0; }
+  dialog summary { cursor: pointer; font-weight: 600; list-style: none; display: flex; justify-content: space-between; gap: 16px; }
+  dialog summary::-webkit-details-marker { display: none; }
+  dialog summary::after { content: "+"; color: var(--faint); font-weight: 400; transition: transform .2s; }
+  dialog details[open] summary::after { transform: rotate(45deg); }
+  dialog details p, dialog details ul { margin-top: 8px; color: var(--muted); font-size: 15px; }
+  dialog ul { padding-left: 18px; } dialog li + li { margin-top: 6px; }
+  dialog code { font: 500 12.5px ui-monospace, "SF Mono", Menlo, monospace; color: var(--ink); word-break: break-all; }
+
+
+  :focus-visible { outline: 2px solid #19c2b0; outline-offset: 3px; border-radius: 6px; }
+  .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  @media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; animation: none !important; } }
+  @media (max-height: 760px) { main { padding-block: 20px; } h1 { margin-top: 18px; } .cmd, .stats { margin-top: 22px; } .lead { font-size: 16.5px; } }
+  @media (max-width: 1000px) {
+    main { grid-template-columns: minmax(0, 1fr); gap: 40px; padding: 40px 20px; text-align: center; }
+    .brand { justify-content: center; } .lead { margin-inline: auto; } .stats { justify-content: center; } .screen { height: 380px; }
+    footer { justify-content: center; text-align: center; padding: 16px 20px; }
+    .menubar .left span:not(:first-child) { display: none; }
+  }
+  @media (max-width: 480px) { .scanbtn span { display: none; } .scanbtn { padding: 9px 11px; } .scenes button { padding: 7px 8px; } .stats { gap: 22px; } .stat.hero b { font-size: 36px; } .cmd { padding-left: 12px; } .screen { height: 400px; } }
+</style>
+</head>
+<body>
+<div class="menubar" aria-hidden="true">
+  <div class="left"><img src="icon.png" alt=""><span>Lens</span><span>File</span><span>Edit</span><span>View</span></div>
+  <div class="mbicon" id="mbicon" title="Lens in the menu bar">
+    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M0.6 10.8 L5.6 8.4" stroke-width="1.3"/>
+      <path d="M8.2 2.8 L3.6 13.2 H12.8 Z" fill="currentColor" fill-opacity=".22" stroke-width="1.4"/>
+      <path d="M10.7 7.4 L17.3 4.4 M11.2 8.5 L17.3 8.1 M11.7 9.6 L17.3 11.8" stroke-width="1.25"/>
+    </svg>
+  </div>
+  <span id="clock"></span>
+</div>
+
+<main>
+  <div class="intro">
+    <div class="brand"><img src="icon.png" alt="Lens app icon" width="52" height="52">Lens</div>
+    <h1>Point at any text.<br><span>Read it in yours.</span></h1>
+    <p class="lead">Tap a key, drag over a video, a screenshot, a PDF or a game — Lens reads the text and translates it right there. On-device.</p>
+
+    <div class="cmd"><code id="cmd">curl -fsSL https://buhaenko.github.io/lens/install.sh | bash</code><button id="copy" aria-label="Copy install command">Copy</button><span class="sr" id="copied" aria-live="polite"></span></div>
+    <div class="meta">Paste into Terminal to install · or <a href="https://github.com/buhaenko/lens/releases/latest/download/Lens.dmg">download the DMG</a> · macOS 15+</div>
+    <div class="notmac" id="notmac">Lens is a Mac app — open this page on your Mac to install it.</div>
+
+    <div class="stats">
+      <div class="stat hero"><b data-v="downloads">0</b><span>downloads</span></div>
+      <div class="stat"><b>Free</b><span>and open source</span></div>
+      <div class="stat"><b data-v="size">1.3 MB</b><span>v<span data-v="version">1.0.0</span></span></div>
+    </div>
+  </div>
+
+  <div class="demo" id="demo">
+    <div class="demo-bar">
+      <div class="scenes" role="tablist" aria-label="Demo scenes">
+        <button role="tab" data-scene="video" class="on">▶︎ Video</button>
+        <button role="tab" data-scene="pdf">📄 PDF</button>
+        <button role="tab" data-scene="game">🎮 Game</button>
+        <button role="tab" data-scene="error">⚠️ Error</button>
+      </div>
+      <button class="scanbtn" id="scanBtn"><svg width="14" height="14" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M2 6V3.5A1.5 1.5 0 0 1 3.5 2H6M12 2h2.5A1.5 1.5 0 0 1 16 3.5V6M16 12v2.5a1.5 1.5 0 0 1-1.5 1.5H12M6 16H3.5A1.5 1.5 0 0 1 2 14.5V12"/></svg><span>Scan</span></button>
+    </div>
+
+    <div class="screen" id="screen" aria-label="Demo screen — select text to translate it">
+      <!-- ▶ a video page in a browser, German captions -->
+      <div class="view video win on" data-scene="video">
+        <div class="chrome"><div class="lights"><i></i><i></i><i></i></div><div class="url">Berlin an einem Tag – die Orte, die Touristen nicht kennen</div></div>
+        <div class="page">
+          <div class="player">
+            <div class="tower"></div><div class="city"></div>
+            <div class="cc" id="cc"></div>
+            <div class="controls">
+              <div class="progress"><i></i></div>
+              <div class="ctl">
+                <svg viewBox="0 0 24 24"><path d="M6 5h4v14H6zM14 5h4v14h-4z"/></svg>
+                <svg viewBox="0 0 24 24"><path d="M5 6l9 6-9 6zM16 6h3v12h-3z"/></svg>
+                <svg viewBox="0 0 24 24"><path d="M4 9h4l5-4v14l-5-4H4zM16 8.5a5 5 0 0 1 0 7" stroke="#fff" stroke-width="2" fill-rule="evenodd"/></svg>
+                <span>4:12 / 11:05</span>
+                <span class="sp cc-on">CC</span>
+                <svg viewBox="0 0 24 24"><path d="M4 4h6v2H6v4H4zM14 4h6v6h-2V6h-4zM4 14h2v4h4v2H4zM18 14h2v6h-6v-2h4z"/></svg>
+              </div>
+            </div>
+          </div>
+          <div class="meta-v">
+            <div class="vt blk" data-b="title">Berlin an einem Tag – die Orte, die Touristen nicht kennen</div>
+            <div class="row"><span class="av"></span><span class="ch"><b>Deutsch mit Lena</b><small>182.000 Abonnenten</small></span>
+              <span class="subbtn blk" data-b="subscribe">Abonnieren</span><span class="views">48.213 Aufrufe · vor 3 Tagen</span></div>
+          </div>
+        </div>
+      </div>
+      <!-- 📄 a letter from the tax office, open in a PDF viewer -->
+      <div class="view pdf win" data-scene="pdf">
+        <div class="chrome"><div class="lights"><i></i><i></i><i></i></div><div class="title">Schreiben_Finanzamt.pdf</div></div>
+        <div class="desk"><div class="sheet">
+          <span class="crest"></span>
+          <div class="sender blk" data-b="sender">Finanzamt Berlin-Mitte · Neue Jakobstraße 6</div>
+          <div class="subj blk" data-b="subj">Erinnerung</div>
+          <p class="body blk" data-b="body">Bitte reichen Sie die fehlenden Unterlagen bis zum 15. Dezember ein. Andernfalls müssen wir Ihre Einkünfte schätzen.</p>
+          <p class="sign">Mit freundlichen Grüßen<br>Ihr Finanzamt</p>
+        </div></div>
+      </div>
+      <!-- 🎮 a game dialogue in Japanese -->
+      <div class="view game" data-scene="game">
+        <div class="stars"></div><div class="door"></div>
+        <div class="dialog">
+          <div class="who blk" data-b="who">老人</div>
+          <div class="line blk" data-b="line">この扉の先には、まだ誰も見たことのない世界が広がっている。</div>
+          <div class="choices blk" data-b="choice"><span>▶ 進む</span><span>戻る</span></div>
+        </div>
+      </div>
+      <!-- ⚠️ a macOS alert in English -->
+      <div class="view error" data-scene="error">
+        <div class="alert">
+          <div class="aicon">!</div>
+          <div class="blk" data-b="msg"><b>The operation couldn’t be completed.</b><br>The disk “Macintosh HD” is full — free up some space and try again.</div>
+          <div class="abtns blk" data-b="btns"><span>Cancel</span><span class="primary">Try Again</span></div>
+        </div>
+      </div>
+
+      <div class="veil" id="veil"></div>
+      <div class="sel" id="sel"></div>
+      <div class="toast" id="toast" role="status"></div>
+      <div class="popup lens-pop" id="pop" aria-live="polite">
+        <div class="pills" id="pills"></div>
+        <div class="orig" id="orig"></div>
+        <hr>
+        <div class="trans" id="trans"></div>
+        <div class="hints"><span><b>⇥</b>language</span><span><b>⌘C</b><span id="copyhint">copy</span></span><span><b>esc</b>close</span></div>
+      </div>
+    </div>
+    <div class="caption" id="cap">Tap <span class="kbd">right ⌘</span> or press <b>Scan</b> — then drag over any text in the picture.</div>
+  </div>
+</main>
+
+<footer>
+  <span>Made by <a href="https://github.com/buhaenko">Serhii Buhaienko</a></span>
+  <nav aria-label="Links"><button id="safeBtn">Is it safe?</button><a href="https://github.com/buhaenko/lens">GitHub</a><a href="https://github.com/buhaenko/lens/issues">Report a bug</a><a href="../lingo/">Lingo</a></nav>
+</footer>
+
+<dialog id="safe" aria-labelledby="safeTitle">
+  <button class="x" id="safeClose" aria-label="Close">✕</button>
+  <h2 id="safeTitle">Is it safe?</h2>
+    <details open><summary>It’s open source</summary>
+    <p>Every line of Lens is on <a href="https://github.com/buhaenko/lens">GitHub</a>. Each release is built and tested by GitHub Actions straight from that code,
+       so the app you download is the code you can read.</p></details>
+  <details><summary>What it can access — and why</summary>
+    <ul><li><strong>Screen Recording</strong> — to read the text inside the area you select — only when you scan.</li><li><strong>Accessibility</strong> — to notice the quick-scan key (a modifier you tap on its own). Lens never reads what you type.</li></ul>
+    <p>macOS asks you first; Lens is already in the list, you just flip the switch. You can turn it off any time in System Settings → Privacy &amp; Security.</p></details>
+  <details><summary>Does it send my data anywhere?</summary><p>Lens never sends your text or screen anywhere. Network access: macOS downloading a language pack from Apple the first time you translate into a new language, and a daily check on GitHub for a new version of Lens (you can turn it off in Settings). No analytics, no accounts, no tracking.</p></details>
+  <details><summary>Why doesn’t macOS say “verified developer”?</summary>
+    <p>Apple charges $99 a year for that badge. Lens is a free side project, so it’s signed locally instead.
+       The Terminal command installs it without any warning. With the DMG, macOS asks once — click
+       <strong>Open Anyway</strong> in System Settings → Privacy &amp; Security.</p></details>
+  <details><summary>How do I check the download?</summary>
+    <p>Compare the SHA-256 of the file with the one published on the release page:</p>
+    <p><code>shasum -a 256 ~/Downloads/Lens.dmg</code><br><code data-v="sha"><a href="https://github.com/buhaenko/lens/releases/latest">see the release page</a></code></p></details>
+  <details><summary>How do I uninstall it?</summary>
+    <p>Quit Lens from its menu and drag it from Applications to the Trash — or run<br>
+       <code>curl -fsSL https://buhaenko.github.io/lens/install.sh | bash -s -- uninstall</code></p></details>
+  <details><summary>Anything else I should know?</summary>
+    <p>The first translation into a new language downloads a language pack from Apple once; after that it works offline.
+       Every scan is kept in a searchable history in the menu bar — pin the ones worth keeping.</p></details>
+</dialog>
+
+<script>
+  // ───── interactive Lens demo ─────
+  const DATA = {
+    video: { src: "de", blocks: {
+      cc:        { de: "Das hier ist der beste Döner in ganz Berlin.", en: "This is the best döner in all of Berlin.", fr: "C’est le meilleur döner de tout Berlin.",
+                   es: "Este es el mejor döner de todo Berlín.", uk: "Це найкращий донер у всьому Берліні.", ja: "これはベルリンで一番おいしいドネルだ。" },
+      title:     { de: "Berlin an einem Tag – die Orte, die Touristen nicht kennen", en: "Berlin in a day – the places tourists don’t know",
+                   fr: "Berlin en un jour – les lieux que les touristes ne connaissent pas", es: "Berlín en un día: los lugares que los turistas no conocen",
+                   uk: "Берлін за один день – місця, яких не знають туристи", ja: "1日でベルリン ― 観光客が知らない場所" },
+      subscribe: { de: "Abonnieren", en: "Subscribe", fr: "S’abonner", es: "Suscribirse", uk: "Підписатися", ja: "チャンネル登録" } } },
+    pdf: { src: "de", blocks: {
+      sender: { de: "Finanzamt Berlin-Mitte · Neue Jakobstraße 6", en: "Berlin-Mitte Tax Office · Neue Jakobstraße 6", fr: "Centre des impôts de Berlin-Mitte · Neue Jakobstraße 6",
+                es: "Oficina de Hacienda de Berlín-Mitte · Neue Jakobstraße 6", uk: "Податкова Берлін-Мітте · Neue Jakobstraße 6", ja: "ベルリン・ミッテ税務署 · Neue Jakobstraße 6" },
+      subj:   { de: "Erinnerung", en: "Reminder", fr: "Rappel", es: "Recordatorio", uk: "Нагадування", ja: "督促" },
+      body:   { de: "Bitte reichen Sie die fehlenden Unterlagen bis zum 15. Dezember ein. Andernfalls müssen wir Ihre Einkünfte schätzen.",
+                en: "Please submit the missing documents by 15 December. Otherwise we will have to estimate your income.",
+                fr: "Veuillez transmettre les documents manquants avant le 15 décembre. À défaut, nous devrons estimer vos revenus.",
+                es: "Envíe los documentos que faltan antes del 15 de diciembre. De lo contrario, tendremos que estimar sus ingresos.",
+                uk: "Будь ласка, подайте відсутні документи до 15 грудня. Інакше нам доведеться оцінити ваші доходи самостійно.",
+                ja: "不足している書類を12月15日までに提出してください。提出がない場合、所得を推計することになります。" } } },
+    game: { src: "ja", blocks: {
+      who:    { ja: "老人", en: "Old man", de: "Alter Mann", fr: "Vieil homme", es: "Anciano", uk: "Старий" },
+      line:   { ja: "この扉の先には、まだ誰も見たことのない世界が広がっている。", en: "Beyond this door lies a world no one has ever seen.",
+                de: "Hinter dieser Tür liegt eine Welt, die noch niemand je gesehen hat.", fr: "Derrière cette porte s’étend un monde que personne n’a jamais vu.",
+                es: "Tras esta puerta se extiende un mundo que nadie ha visto jamás.", uk: "За цими дверима — світ, якого ще ніхто ніколи не бачив." },
+      choice: { ja: "進む / 戻る", en: "Go on / Go back", de: "Weitergehen / Zurück", fr: "Avancer / Revenir", es: "Avanzar / Volver", uk: "Іти далі / Повернутися" } } },
+    error: { src: "en", blocks: {
+      msg:  { en: "The operation couldn’t be completed. The disk “Macintosh HD” is full — free up some space and try again.",
+              de: "Der Vorgang konnte nicht abgeschlossen werden. Das Volume „Macintosh HD“ ist voll – gib etwas Speicherplatz frei und versuche es erneut.",
+              fr: "L’opération n’a pas pu s’achever. Le disque « Macintosh HD » est plein — libérez de l’espace et réessayez.",
+              es: "No se pudo completar la operación. El disco «Macintosh HD» está lleno: libera espacio e inténtalo de nuevo.",
+              uk: "Не вдалося завершити операцію. Диск «Macintosh HD» заповнений — звільніть трохи місця й спробуйте ще раз.",
+              ja: "操作を完了できませんでした。ディスク「Macintosh HD」がいっぱいです。空き容量を増やしてから、もう一度お試しください。" },
+      btns: { en: "Cancel · Try Again", de: "Abbrechen · Erneut versuchen", fr: "Annuler · Réessayer", es: "Cancelar · Reintentar",
+              uk: "Скасувати · Спробувати ще раз", ja: "キャンセル · 再試行" } } },
+  };
+  // single caption words, for when you select just one or two
+  const WORDS = {
+    Das: { en: "this", fr: "ce", es: "esto", uk: "це", ja: "これ" },          hier: { en: "here", fr: "ici", es: "aquí", uk: "тут", ja: "ここ" },
+    ist: { en: "is", fr: "est", es: "es", uk: "є", ja: "〜だ" },               der: { en: "the", fr: "le", es: "el", uk: "(артикль)", ja: "（冠詞）" },
+    beste: { en: "best", fr: "meilleur", es: "mejor", uk: "найкращий", ja: "一番の" }, Döner: { en: "döner kebab", fr: "kebab", es: "döner kebab", uk: "донер", ja: "ドネルケバブ" },
+    in: { en: "in", fr: "dans", es: "en", uk: "у", ja: "〜で" },               ganz: { en: "all of, whole", fr: "tout", es: "todo", uk: "весь, цілий", ja: "全体の" },
+    Berlin: { en: "Berlin", fr: "Berlin", es: "Berlín", uk: "Берлін", ja: "ベルリン" },
+  };
+  const LANGS = ["en", "de", "fr", "es", "uk", "ja"];
+  const $ = id => document.getElementById(id);
+  const screen = $("screen"), sel = $("sel"), pop = $("pop"), toast = $("toast"), mb = $("mbicon");
+  let scene = "video", target = (navigator.language || "en").slice(0, 2), picked = [], scanning = false, drag = null, timer;
+  if (!LANGS.includes(target)) target = "en";
+
+  $("cc").innerHTML = DATA.video.blocks.cc.de.split(" ").map((w, i) => `<span class="blk" data-b="w${i}">${w}</span>`).join(" ");
+  const ccWords = DATA.video.blocks.cc.de.split(" ");
+  const bare = w => w.replace(/[.,!?]/g, "");
+
+  function setScene(name) {
+    scene = name; closePop();
+    document.querySelectorAll(".scenes button").forEach(b => { b.classList.toggle("on", b.dataset.scene === name); b.setAttribute("aria-selected", b.dataset.scene === name); });
+    document.querySelectorAll(".view").forEach(v => v.classList.toggle("on", v.dataset.scene === name));
+  }
+  document.querySelectorAll(".scenes button").forEach(b => b.addEventListener("click", () => setScene(b.dataset.scene)));
+
+  function showToast(text) { toast.textContent = text; toast.classList.add("on"); clearTimeout(toast.t); toast.t = setTimeout(() => toast.classList.remove("on"), 1800); }
+
+  function startScan() {
+    closePop(); scanning = true; screen.classList.add("scanning");
+    mb.classList.add("flash"); setTimeout(() => mb.classList.remove("flash"), 260);
+    $("cap").innerHTML = "Now drag over some text — <span class='kbd'>esc</span> cancels.";
+    if (screen.getBoundingClientRect().top < 0 || screen.getBoundingClientRect().bottom > innerHeight) screen.scrollIntoView({ behavior: "smooth", block: "center" });
+  }
+  function stopScan() {
+    scanning = false; drag = null; screen.classList.remove("scanning", "dragging"); sel.style.display = "none";
+    $("cap").innerHTML = "Tap <span class='kbd'>right ⌘</span> or press <b>Scan</b> — then drag over any text in the picture.";
+  }
+  $("scanBtn").addEventListener("click", startScan);
+
+  const toLocal = e => { const r = screen.getBoundingClientRect(); return { x: Math.min(Math.max(e.clientX - r.left, 0), r.width), y: Math.min(Math.max(e.clientY - r.top, 0), r.height) }; };
+  screen.addEventListener("pointerdown", e => {
+    if (!scanning) { if (!pop.contains(e.target)) closePop(); return; }
+    e.preventDefault(); try { screen.setPointerCapture(e.pointerId); } catch {}
+    drag = toLocal(e); screen.classList.add("dragging");
+    Object.assign(sel.style, { display: "block", left: drag.x + "px", top: drag.y + "px", width: "0px", height: "0px" });
+  });
+  screen.addEventListener("pointermove", e => {
+    if (!drag) return;
+    const p = toLocal(e), x = Math.min(p.x, drag.x), y = Math.min(p.y, drag.y);
+    Object.assign(sel.style, { left: x + "px", top: y + "px", width: Math.abs(p.x - drag.x) + "px", height: Math.abs(p.y - drag.y) + "px" });
+  });
+  screen.addEventListener("pointerup", e => {
+    if (!drag) return;
+    finish({ x: sel.offsetLeft, y: sel.offsetTop, w: sel.offsetWidth, h: sel.offsetHeight });
+  });
+
+  function finish(r) {
+    stopScan();
+    if (r.w < 6 || r.h < 6) return showToast("Drag a rectangle over some text");
+    const sr = screen.getBoundingClientRect();
+    picked = [...document.querySelectorAll(`.view.on .blk`)].filter(b => {
+      const br = b.getBoundingClientRect(), bx = br.left - sr.left, by = br.top - sr.top;
+      const ix = Math.min(bx + br.width, r.x + r.w) - Math.max(bx, r.x), iy = Math.min(by + br.height, r.y + r.h) - Math.max(by, r.y);
+      return ix > 4 && iy > 4;
+    }).map(b => b.dataset.b);
+    const words = picked.filter(b => /^w\d+$/.test(b));
+    if (words.length && (words.length === ccWords.length || words.length < picked.length)) picked = ["cc", ...picked.filter(b => !words.includes(b))];
+    if (!picked.length) return showToast("No text there — try dragging over the words");
+    if (target === DATA[scene].src) target = LANGS.find(l => l !== DATA[scene].src);
+    openPop(r);
+  }
+
+  // first visit: Lens shows itself once — scan, drag over the caption, read it
+  let auto = true;
+  const stopAuto = () => auto = false;
+  ["pointerdown", "keydown"].forEach(t => addEventListener(t, stopAuto, { capture: true, once: true }));
+  async function autoDemo() {
+    const wait = ms => new Promise(r => setTimeout(r, ms));
+    await wait(1200); if (!auto || scene !== "video") return;
+    startScan(); await wait(500); if (!auto) return stopScan();
+    const sr = screen.getBoundingClientRect(), cr = $("cc").getBoundingClientRect();
+    const a = { x: cr.left - sr.left - 6, y: cr.top - sr.top - 5 }, b = { x: cr.right - sr.left + 6, y: cr.bottom - sr.top + 5 };
+    screen.classList.add("dragging"); sel.style.display = "block";
+    for (let t = 0; t <= 1.0001; t += 1 / 24) {
+      if (!auto) return stopScan();
+      const e = 1 - (1 - t) ** 3;
+      Object.assign(sel.style, { left: a.x + "px", top: a.y + "px", width: (b.x - a.x) * e + "px", height: Math.max(2, (b.y - a.y) * e) + "px" });
+      await wait(25);
+    }
+    await wait(150); if (!auto) return stopScan();
+    finish({ x: a.x, y: a.y, w: b.x - a.x, h: b.y - a.y });
+    $("cap").innerHTML = "Your turn — press <b>Scan</b> and drag over a single word, the title, or another scene.";
+  }
+  matchMedia("(prefers-reduced-motion: reduce)").matches || autoDemo();
+
+  function renderPills() {
+    const src = DATA[scene].src;
+    $("pills").innerHTML = `<span class="from">${src.toUpperCase()}</span><span class="arrow">→</span>` +
+      LANGS.filter(l => l !== src).map(l => `<span data-l="${l}" class="${l === target ? "on" : ""}">${l.toUpperCase()}</span>`).join("");
+    $("pills").querySelectorAll("[data-l]").forEach(p => p.addEventListener("click", () => { target = p.dataset.l; translate(); }));
+  }
+  function translate() {
+    const blocks = DATA[scene].blocks, src = DATA[scene].src;
+    renderPills();
+    const isWord = b => /^w\d+$/.test(b), word = b => bare(ccWords[+b.slice(1)]);
+    const wordsOnly = picked.every(isWord);
+    $("orig").textContent = wordsOnly ? picked.map(word).join(" ") : picked.map(b => blocks[b][src]).join(" ");
+    const text = wordsOnly
+      ? (target === src ? picked.map(word).join(" ") : picked.map(b => picked.length === 1 ? WORDS[word(b)][target] : `${word(b)} — ${WORDS[word(b)][target]}`).join("\n"))
+      : picked.map(b => blocks[b][target]).join(" ");
+    const lines = Math.min(4, Math.max(1, Math.ceil(text.length / 44)));
+    $("trans").innerHTML = `<div class="skel">${Array.from({ length: lines }, (_, i) => `<i style="width:${i === lines - 1 && lines > 1 ? 45 : [97, 90, 94][i % 3]}%"></i>`).join("")}</div>`;
+    $("copyhint").textContent = "copy";
+    clearTimeout(timer);
+    timer = setTimeout(() => { $("trans").style.opacity = 0; requestAnimationFrame(() => { $("trans").textContent = text; $("trans").style.opacity = 1; }); }, 420 + Math.random() * 300);
+  }
+  function openPop(r) {
+    translate();
+    pop.style.left = "0px"; pop.style.top = "0px"; pop.classList.add("on");
+    const W = screen.clientWidth, H = screen.clientHeight, pw = pop.offsetWidth, ph = Math.max(pop.offsetHeight, 150);
+    const left = Math.max(8, Math.min(r.x, W - pw - 12));
+    pop.style.left = left + "px"; pop.style.top = pop.style.bottom = "auto";
+    if (r.y + r.h + 10 + ph <= H - 8) pop.style.top = r.y + r.h + 10 + "px";          // below the selection
+    else if (r.y - 10 - ph >= 8) pop.style.bottom = H - r.y + 10 + "px";             // above it — grows upward as the text arrives
+    else pop.style.top = "8px";
+  }
+  function closePop() { pop.classList.remove("on"); clearTimeout(timer); }
+
+  // keyboard: right ⌘ tap starts a scan (like the app), ⇧⌘7 too; Tab / ⌘C / Esc inside the popup
+  let metaDown = 0, metaDirty = false;
+  document.addEventListener("keydown", e => {
+    if (e.key === "Meta" && e.location === 2) { metaDown = Date.now(); metaDirty = false; return; }
+    if (metaDown) metaDirty = true;
+    if (e.metaKey && e.shiftKey && e.code === "Digit7") { e.preventDefault(); startScan(); return; }
+    if (e.key === "Escape") { if (scanning) stopScan(); closePop(); return; }
+    if (!pop.classList.contains("on")) return;
+    if (e.key === "Tab") {
+      e.preventDefault();
+      const list = LANGS.filter(l => l !== DATA[scene].src), i = list.indexOf(target);
+      target = list[(i + (e.shiftKey ? -1 : 1) + list.length) % list.length]; translate();
+    } else if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "c" && !String(getSelection())) {
+      e.preventDefault(); navigator.clipboard?.writeText($("trans").textContent).then(() => $("copyhint").textContent = "copied");
+    }
+  });
+  document.addEventListener("keyup", e => {
+    if (e.key === "Meta" && e.location === 2) { if (metaDown && !metaDirty && Date.now() - metaDown < 350) startScan(); metaDown = 0; }
+  });
+
+  const clock = document.getElementById('clock');
+  const tick = () => clock.textContent = new Date().toLocaleString('en-GB', { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }).replace(',', '');
+  tick(); setInterval(tick, 30000);
+
+  // install command: GitHub Pages copy of install.sh; on a local preview it points at this server instead
+  const local = /^(localhost|127\.0\.0\.1)$/.test(location.hostname);
+  const base = local ? location.href.replace(/[#?].*$/, '').replace(/index\.html$/, '').replace(/\/?$/, '/') : 'https://buhaenko.github.io/lens/';
+  const cmd = local ? `curl -fsSL ${base}install.sh | INSTALL_BASE_URL=${base.slice(0, -1)} bash` : `curl -fsSL ${base}install.sh | bash`;
+  document.getElementById('cmd').textContent = cmd;
+  document.getElementById('uninst') && (document.getElementById('uninst').textContent = cmd.replace(/bash$/, 'bash -s -- uninstall'));
+  document.getElementById('copy').onclick = async ev => {
+    try { await navigator.clipboard.writeText(cmd); ev.target.textContent = 'Copied'; document.getElementById('copied').textContent = 'Install command copied'; }
+    catch { ev.target.textContent = 'Select & copy'; }
+    setTimeout(() => ev.target.textContent = 'Copy', 1600);
+  };
+  if (!/Macintosh|Mac OS X/.test(navigator.userAgent) || 'ontouchend' in document) document.getElementById('notmac').style.display = 'block';
+
+  // “Is it safe?”
+  const safe = document.getElementById('safe');
+  document.getElementById('safeBtn').onclick = () => safe.showModal();
+  document.getElementById('safeClose').onclick = () => safe.close();
+  safe.addEventListener('click', e => { if (e.target === safe) safe.close(); });
+  if (location.hash === '#faq') safe.showModal();
+</script>
+</body>
+</html>
