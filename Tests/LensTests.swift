@@ -4,6 +4,7 @@ import Vision
 import Translation
 import ScreenCaptureKit
 import CryptoKit
+import Carbon.HIToolbox
 
 /// Renders text into a white image (like a screenshot of a document) for OCR tests.
 func renderText(_ text: String, size: CGFloat = 26, width: CGFloat = 900) -> CGImage {
@@ -137,6 +138,27 @@ final class UnsafeMutableTransferBox<T>: @unchecked Sendable { var value: T; ini
     expectEqual(failure(prepare(release("otherkey", version: "9.9.9"), publicKey: Updater.publicKey)), "badSignature", "an archive signed with another key is rejected")
     expectEqual(failure(prepare(release("otherapp", version: "9.9.9", id: "com.evil.App"))), "badArchive", "another app's bundle is rejected")
     expectEqual(failure(prepare(release("mismatch", version: "9.9.9", bundleVersion: "1.0.0"))), "badArchive", "a bundle whose version doesn't match the release is rejected (no downgrades)")
+
+    section("Selection overlay — always on top")
+    if let screen = NSScreen.main {
+        let overlay = OverlayWindow(screen: screen)
+        expect(overlay.level.rawValue >= Int(CGShieldingWindowLevel()), "level is the top one (\(overlay.level.rawValue)) — above full-screen video, menus and other overlays")
+        expect(overlay.level > .screenSaver && overlay.level > .popUpMenu, "above screen-saver and pop-up menu levels")
+        expect(overlay.collectionBehavior.contains(.canJoinAllSpaces) && overlay.collectionBehavior.contains(.fullScreenAuxiliary), "shows on every Space, including full-screen apps")
+        expect(!overlay.hidesOnDeactivate, "doesn't vanish if another app grabs focus")
+        expect(overlay.canBecomeKey && overlay.acceptsMouseMovedEvents, "takes the keyboard (Esc) and mouse moves")
+        expectEqual(overlay.frame, screen.frame, "covers the whole screen")
+        let view = overlay.selection
+        var result: NSRect?? = .none
+        view.onDone = { result = .some($0) }
+        let esc = NSEvent.keyEvent(with: .keyDown, location: .zero, modifierFlags: [], timestamp: 0, windowNumber: 0, context: nil, characters: "\u{1b}", charactersIgnoringModifiers: "\u{1b}", isARepeat: false, keyCode: UInt16(kVK_Escape))!
+        view.keyDown(with: esc)
+        expect(result == .some(nil), "Esc cancels")
+    } else { skip("overlay", "no screen") }
+
+    section("Selection pointer")
+    expect(Crosshair.cursor.image.size == NSSize(width: 24, height: 24) && Crosshair.cursor.hotSpot == NSPoint(x: 12, y: 12), "a small cross that aims at its centre")
+    expect(Crosshair.image.cgImage(forProposedRect: nil, context: nil, hints: nil) != nil, "draws")
 
     section("Edit shortcuts in text fields")
     installEditMenu()

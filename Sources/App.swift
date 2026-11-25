@@ -17,6 +17,11 @@ import Carbon.HIToolbox
     // capture / popup state (see App+Capture, App+Popup)
     var overlays: [OverlayWindow] = []
     var capturing = false
+    var captureStartedAt = Date.distantPast
+    var previousApp: NSRunningApplication?
+    var overlayWatchdog: Timer?
+    var overlayKeyMonitor: Any?
+    var overlayObservers: [NSObjectProtocol] = []
     var anchoredBelow = true
     var shownAt = Date.distantPast
     var popupKeyMonitor: Any?

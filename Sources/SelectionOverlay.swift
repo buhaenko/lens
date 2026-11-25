@@ -1,9 +1,32 @@
 // Full-screen overlay for dragging the area to scan: dims the screen, Esc or right-click cancels.
+// Built to show up on top of everything — full-screen videos, games, other overlays — and to keep its
+// small cross pointer even when another app hides or changes the cursor.
 
 import AppKit
 import Carbon.HIToolbox
 
 final class OverlayWindow: NSPanel {
+    /// The highest level a normal app can use: above full-screen apps, video players, menus and other overlays.
+    static let topLevel = NSWindow.Level(rawValue: Int(CGShieldingWindowLevel()))
+
+    let selection: SelectionView
+
+    init(screen: NSScreen) {
+        selection = SelectionView(frame: NSRect(origin: .zero, size: screen.frame.size))
+        super.init(contentRect: screen.frame, styleMask: [.borderless, .nonactivatingPanel], backing: .buffered, defer: false)
+        level = Self.topLevel
+        // every Space, including other apps' full-screen ones; ignored by Mission Control and ⌘`
+        collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary, .stationary, .ignoresCycle]
+        hidesOnDeactivate = false          // panels vanish when the app loses focus by default
+        isReleasedWhenClosed = false
+        isOpaque = false
+        backgroundColor = .clear
+        hasShadow = false
+        acceptsMouseMovedEvents = true
+        contentView = selection
+        setFrame(screen.frame, display: false)
+    }
+
     override var canBecomeKey: Bool { true }
 }
 
@@ -12,10 +35,22 @@ final class SelectionView: NSView {
     var onDone: (NSRect?) -> Void = { _ in }
     private var start: NSPoint?
     private var selection: NSRect = .zero
-
     override var acceptsFirstResponder: Bool { true }
     override func acceptsFirstMouse(for event: NSEvent?) -> Bool { true }
-    override func resetCursorRects() { addCursorRect(bounds, cursor: .crosshair) }
+    override func resetCursorRects() { addCursorRect(bounds, cursor: Crosshair.cursor) }
+
+    override func updateTrackingAreas() {
+        super.updateTrackingAreas()
+        trackingAreas.forEach(removeTrackingArea)
+        addTrackingArea(NSTrackingArea(rect: bounds, options: [.mouseMoved, .mouseEnteredAndExited, .cursorUpdate, .activeAlways, .inVisibleRect],
+                                       owner: self))
+    }
+
+    private func track(_ event: NSEvent) { Crosshair.cursor.set() }
+
+    override func cursorUpdate(with event: NSEvent) { Crosshair.cursor.set() }
+    override func mouseMoved(with event: NSEvent) { track(event) }
+    override func mouseEntered(with event: NSEvent) { track(event) }
 
     override func draw(_ dirtyRect: NSRect) {
         NSColor.black.withAlphaComponent(0.22).setFill()
@@ -32,6 +67,7 @@ final class SelectionView: NSView {
     override func mouseDown(with event: NSEvent) {
         start = convert(event.locationInWindow, from: nil)
         selection = .zero
+        track(event)
         needsDisplay = true
     }
 
@@ -40,6 +76,7 @@ final class SelectionView: NSView {
         let point = convert(event.locationInWindow, from: nil)
         selection = NSRect(x: min(start.x, point.x), y: min(start.y, point.y),
                            width: abs(point.x - start.x), height: abs(point.y - start.y)).integral
+        track(event)
         needsDisplay = true
     }
 
