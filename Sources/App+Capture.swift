@@ -6,7 +6,7 @@ import Carbon.HIToolbox
 extension AppDelegate {
     @objc func capture() {
         if capturing {
-            if !overlays.isEmpty { keepOverlayOnTop(); return }                  // already selecting: just make sure it's visible
+            if !overlays.isEmpty { selectionFinished(nil); return }             // the same key again closes the selection
             guard Date().timeIntervalSince(captureStartedAt) > 15 else { return }   // a scan is still running
             NSLog("Lens: the last scan never finished — starting over")
         }
