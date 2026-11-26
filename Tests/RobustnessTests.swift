@@ -118,9 +118,7 @@ func noiseImage(_ w: Int, _ h: Int, seed: UInt64) -> CGImage {
     expectEqual(titles.last, "Quit Lensy", "Quit is last")
     let real = menu.items.filter { !$0.isSeparatorItem }
     expect(real.allSatisfy { $0.image != nil }, "every item has an icon")
-    if #available(macOS 27.0, *) {
-        expect(real.allSatisfy { $0.preferredImageVisibility == .visible }, "icons are forced visible (macOS 27 hides them otherwise)")
-    }
+    expect(real.allSatisfy(\.imageForcedVisible), "icons are forced visible (macOS 27 hides them otherwise)")
     expect(real.allSatisfy { item in item.action.map { sel in (item.target as AnyObject?)?.responds(to: sel) ?? false } ?? false },
            "every item is wired to something that handles it")
     expect(real.first { $0.title == "Send Feedback…" }?.isEnabled == true, "Send Feedback is enabled")
