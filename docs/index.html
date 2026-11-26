@@ -453,7 +453,7 @@
   <details><summary>What it can access — and why</summary>
     <ul><li><strong>Screen Recording</strong> — to read the text inside the area you select — only when you scan.</li><li><strong>Accessibility</strong> — to notice the quick-scan key (a modifier you tap on its own). Lensy never reads what you type.</li></ul>
     <p>macOS asks you first; Lensy is already in the list, you just flip the switch. You can turn it off any time in System Settings → Privacy &amp; Security.</p></details>
-  <details><summary>Does it send my data anywhere?</summary><p>Lensy never sends your text or screen anywhere. Network access: macOS downloading a language pack from Apple the first time you translate into a new language, a daily check on GitHub for a new version of Lensy (you can turn it off in Settings), and — only when you use <em>Send Feedback…</em> — the email and message you type there. No analytics, no accounts, no tracking.</p></details>
+  <details><summary>Does it send my data anywhere?</summary><p>Lensy never sends your text or screen anywhere. Network access: macOS downloading a language pack from Apple the first time you translate into a new language, a daily check on GitHub for a new version of Lensy (you can turn it off in Settings), and — only when you use <em>Send Feedback…</em> — the email and message you type there. No analytics in the app, no accounts, no tracking. This website counts visits anonymously with Cloudflare Web Analytics — no cookies, nothing that identifies you.</p></details>
   <details><summary>Why doesn’t macOS say “verified developer”?</summary>
     <p>Apple charges $99 a year for that badge. Lensy is a free side project, so it’s signed locally instead.
        The Terminal command installs it without any warning. With the DMG, macOS asks once — click
@@ -692,5 +692,7 @@
     show();
   })();
 </script>
+<!-- anonymous visit counts: Cloudflare Web Analytics, no cookies -->
+<script defer src="https://static.cloudflareinsights.com/beacon.min.js" data-cf-beacon='{"token": "4f9cd4080e4f417ca5a7d7b2cba5d7a1"}'></script>
 </body>
 </html>
