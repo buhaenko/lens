@@ -38,6 +38,7 @@ import Carbon.HIToolbox
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         guard becomeSingleInstance() else { return }
+        Appearance.apply()
         installEditMenu()
         setUpStatusItem()
         setUpPopupPanel()

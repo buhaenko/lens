@@ -123,6 +123,21 @@ func noiseImage(_ w: Int, _ h: Int, seed: UInt64) -> CGImage {
            "every item is wired to something that handles it")
     expect(real.first { $0.title == "Send Feedback…" }?.isEnabled == true, "Send Feedback is enabled")
 
+    section("Appearance — light, dark or auto")
+    let savedAppearance = defaults.string(forKey: "appearance")
+    _ = NSApplication.shared
+    Appearance.apply(.dark)
+    expectEqual(NSApp.appearance?.name, .darkAqua, "Dark → every window goes dark")
+    expectEqual(Appearance.current, .dark, "and it's remembered")
+    Appearance.apply(.light)
+    expectEqual(NSApp.appearance?.name, .aqua, "Light → light")
+    Appearance.apply(.system)
+    expect(NSApp.appearance == nil, "Auto → follows macOS")
+    defaults.set("bogus", forKey: "appearance")
+    expectEqual(Appearance.current, .system, "a broken setting falls back to Auto")
+    if let savedAppearance { defaults.set(savedAppearance, forKey: "appearance") } else { defaults.removeObject(forKey: "appearance") }
+    NSApp.appearance = nil
+
     // MARK: Crash tests
     section("Crash test — update feed fuzzing")
     var rng = SystemRandomNumberGenerator()

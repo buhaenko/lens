@@ -6,8 +6,10 @@
 <title>Lensy — read & translate any text on your Mac screen</title>
 <meta name="description" content="Lensy is a free, open-source Mac menu bar app: select any text on screen — a video, an image, a PDF, a game — and read it translated. Recognition and translation run on-device.">
 <link rel="canonical" href="https://getlensy.app/">
-<meta name="theme-color" content="#08111a">
-<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#08111a" media="(prefers-color-scheme: dark)">
+<meta name="color-scheme" content="dark light">
+<meta name="theme-color" content="#f3f5f7" media="(prefers-color-scheme: light)">
+<script>try { const t = localStorage.getItem("theme"); if (t === "light" || t === "dark") document.documentElement.dataset.theme = t; } catch (e) {}</script>
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
 <link rel="icon" type="image/png" sizes="64x64" href="favicon.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
@@ -245,6 +247,84 @@
     .menubar .left span:not(:first-child) { display: none; }
   }
   @media (max-width: 480px) { .scanbtn span { display: none; } .scanbtn { padding: 9px 11px; } .scenes button { padding: 7px 8px; } .stats { gap: 22px; } .stat.hero b { font-size: 36px; } .cmd { padding-left: 12px; } .screen { height: 400px; } }
+
+  /* ───── light theme: soft off-white, nothing glaring. Auto follows macOS; the footer switch overrides it ───── */
+  .theme { display: inline-flex; gap: 2px; padding: 3px; border-radius: 99px; border: 1px solid rgba(255,255,255,.1); background: rgba(255,255,255,.05); }
+  .theme button { width: 28px; height: 24px; display: grid; place-items: center; border-radius: 99px; color: var(--faint); }
+  .theme button svg { width: 15px; height: 15px; }
+  .theme button[aria-pressed="true"] { background: rgba(127,140,155,.22); color: var(--ink); }
+  :root[data-theme="light"] { color-scheme: light; --bg: #f3f5f7; --ink: #1e2933; --muted: #56636f; --faint: #6e7a86; --line: rgba(30,50,70,.1);
+    --grad: linear-gradient(90deg, #2f80e0, #149d8f); --card: #ffffff; --card-line: rgba(30,50,70,.11); }
+  :root[data-theme="light"] body::before { background: radial-gradient(closest-side, rgba(43,140,255,.13), transparent 70%);}
+  :root[data-theme="light"] body::after { background: radial-gradient(closest-side, rgba(25,194,176,.10), transparent 70%);}
+  :root[data-theme="light"] .menubar { background: rgba(248,250,251,.72); color: #26323c;}
+  :root[data-theme="light"] .menubar .left span:not(:first-child) { color: #56636f;}
+  :root[data-theme="light"] .mbicon.flash { background: rgba(30,50,70,.1);}
+  :root[data-theme="light"] .brand img { filter: drop-shadow(0 8px 18px rgba(43,140,255,.25));}
+  :root[data-theme="light"] h1 span { background-image: linear-gradient(90deg, #2f80e0, #149d8f);}
+  :root[data-theme="light"] .cmd { background: var(--card); border-color: var(--card-line); box-shadow: 0 6px 20px -12px rgba(30,60,90,.25);}
+  :root[data-theme="light"] .cmd code { color: #1e2933;}
+  :root[data-theme="light"] .cmd button, :root[data-theme="light"] .scanbtn { box-shadow: 0 8px 18px -10px rgba(43,140,255,.55);}
+  :root[data-theme="light"] .notmac { background: var(--card);}
+  :root[data-theme="light"] .scenes { background: rgba(255,255,255,.7); border-color: var(--card-line);}
+  :root[data-theme="light"] .scenes button.on { background: var(--card); color: var(--ink); box-shadow: 0 1px 3px rgba(30,50,70,.14);}
+  :root[data-theme="light"] .screen { border-color: var(--card-line); box-shadow: 0 30px 70px -32px rgba(30,50,80,.35);}
+  :root[data-theme="light"] .scene { background: var(--card);}
+  :root[data-theme="light"] .source { color: #1e2933;}
+  :root[data-theme="light"] .popup, :root[data-theme="light"] .lens-pop { background: rgba(251,252,253,.97); color: #1e2933; border-color: rgba(30,50,70,.1); box-shadow: 0 24px 50px -18px rgba(20,40,60,.35);}
+  :root[data-theme="light"] .pills { color: #6b7884;}
+  :root[data-theme="light"] .pills span.on { background: rgba(30,50,70,.08); color: #1e2933;}
+  :root[data-theme="light"] .pills .arrow { color: #a3adb7;}
+  :root[data-theme="light"] .orig { color: #66737f;}
+  :root[data-theme="light"] .popup hr { border-top-color: rgba(30,50,70,.09);}
+  :root[data-theme="light"] .hints { color: #8a95a1;}
+  :root[data-theme="light"] .hints b { background: rgba(30,50,70,.06);}
+  :root[data-theme="light"] .skel i { background-image: linear-gradient(90deg, rgba(30,50,70,.06) 0%, rgba(30,50,70,.13) 50%, rgba(30,50,70,.06) 100%);}
+  :root[data-theme="light"] .kbd { background: var(--card); border-color: var(--card-line);}
+  :root[data-theme="light"] .gh { background: var(--card); border-color: var(--card-line); box-shadow: 0 1px 2px rgba(30,50,70,.06);}
+  :root[data-theme="light"] .gh:hover { background: #eef2f5; border-color: rgba(30,50,70,.18);}
+  :root[data-theme="light"] .theme { background: var(--card); border-color: var(--card-line);}
+  :root[data-theme="light"] dialog { background: #fbfcfd; border-color: rgba(30,50,70,.1); box-shadow: 0 40px 90px rgba(20,40,60,.25);}
+  :root[data-theme="light"] dialog::backdrop { background: rgba(30,40,50,.25);}
+  :root[data-theme="light"] dialog .x { background: rgba(30,50,70,.06);}
+  :root[data-theme="light"] :focus-visible { outline-color: #149d8f;}
+  @media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) { color-scheme: light; --bg: #f3f5f7; --ink: #1e2933; --muted: #56636f; --faint: #6e7a86; --line: rgba(30,50,70,.1);
+    --grad: linear-gradient(90deg, #2f80e0, #149d8f); --card: #ffffff; --card-line: rgba(30,50,70,.11); }
+  :root:not([data-theme="dark"]) body::before { background: radial-gradient(closest-side, rgba(43,140,255,.13), transparent 70%);}
+  :root:not([data-theme="dark"]) body::after { background: radial-gradient(closest-side, rgba(25,194,176,.10), transparent 70%);}
+  :root:not([data-theme="dark"]) .menubar { background: rgba(248,250,251,.72); color: #26323c;}
+  :root:not([data-theme="dark"]) .menubar .left span:not(:first-child) { color: #56636f;}
+  :root:not([data-theme="dark"]) .mbicon.flash { background: rgba(30,50,70,.1);}
+  :root:not([data-theme="dark"]) .brand img { filter: drop-shadow(0 8px 18px rgba(43,140,255,.25));}
+  :root:not([data-theme="dark"]) h1 span { background-image: linear-gradient(90deg, #2f80e0, #149d8f);}
+  :root:not([data-theme="dark"]) .cmd { background: var(--card); border-color: var(--card-line); box-shadow: 0 6px 20px -12px rgba(30,60,90,.25);}
+  :root:not([data-theme="dark"]) .cmd code { color: #1e2933;}
+  :root:not([data-theme="dark"]) .cmd button, :root:not([data-theme="dark"]) .scanbtn { box-shadow: 0 8px 18px -10px rgba(43,140,255,.55);}
+  :root:not([data-theme="dark"]) .notmac { background: var(--card);}
+  :root:not([data-theme="dark"]) .scenes { background: rgba(255,255,255,.7); border-color: var(--card-line);}
+  :root:not([data-theme="dark"]) .scenes button.on { background: var(--card); color: var(--ink); box-shadow: 0 1px 3px rgba(30,50,70,.14);}
+  :root:not([data-theme="dark"]) .screen { border-color: var(--card-line); box-shadow: 0 30px 70px -32px rgba(30,50,80,.35);}
+  :root:not([data-theme="dark"]) .scene { background: var(--card);}
+  :root:not([data-theme="dark"]) .source { color: #1e2933;}
+  :root:not([data-theme="dark"]) .popup, :root:not([data-theme="dark"]) .lens-pop { background: rgba(251,252,253,.97); color: #1e2933; border-color: rgba(30,50,70,.1); box-shadow: 0 24px 50px -18px rgba(20,40,60,.35);}
+  :root:not([data-theme="dark"]) .pills { color: #6b7884;}
+  :root:not([data-theme="dark"]) .pills span.on { background: rgba(30,50,70,.08); color: #1e2933;}
+  :root:not([data-theme="dark"]) .pills .arrow { color: #a3adb7;}
+  :root:not([data-theme="dark"]) .orig { color: #66737f;}
+  :root:not([data-theme="dark"]) .popup hr { border-top-color: rgba(30,50,70,.09);}
+  :root:not([data-theme="dark"]) .hints { color: #8a95a1;}
+  :root:not([data-theme="dark"]) .hints b { background: rgba(30,50,70,.06);}
+  :root:not([data-theme="dark"]) .skel i { background-image: linear-gradient(90deg, rgba(30,50,70,.06) 0%, rgba(30,50,70,.13) 50%, rgba(30,50,70,.06) 100%);}
+  :root:not([data-theme="dark"]) .kbd { background: var(--card); border-color: var(--card-line);}
+  :root:not([data-theme="dark"]) .gh { background: var(--card); border-color: var(--card-line); box-shadow: 0 1px 2px rgba(30,50,70,.06);}
+  :root:not([data-theme="dark"]) .gh:hover { background: #eef2f5; border-color: rgba(30,50,70,.18);}
+  :root:not([data-theme="dark"]) .theme { background: var(--card); border-color: var(--card-line);}
+  :root:not([data-theme="dark"]) dialog { background: #fbfcfd; border-color: rgba(30,50,70,.1); box-shadow: 0 40px 90px rgba(20,40,60,.25);}
+  :root:not([data-theme="dark"]) dialog::backdrop { background: rgba(30,40,50,.25);}
+  :root:not([data-theme="dark"]) dialog .x { background: rgba(30,50,70,.06);}
+  :root:not([data-theme="dark"]) :focus-visible { outline-color: #149d8f;}
+  }
 </style>
 </head>
 <body>
@@ -361,7 +441,7 @@
 
 <footer>
   <a class="gh" href="https://github.com/buhaenko/lensy"><svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg><span>github.com/buhaenko/lensy</span></a>
-  <nav aria-label="Links"><button id="safeBtn">Is it safe?</button><a href="https://github.com/buhaenko/lensy/issues">Report a bug</a><a href="https://buhaenko.github.io/lingo/">Lingo</a></nav>
+  <nav aria-label="Links"><div class="theme" role="group" aria-label="Theme"><button data-t="auto" title="Match my Mac" aria-label="Auto theme"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6"/><path d="M8 2a6 6 0 0 1 0 12z" fill="currentColor"/></svg></button><button data-t="light" title="Light" aria-label="Light theme"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="8" cy="8" r="3"/><path d="M8 1.2v1.6M8 13.2v1.6M1.2 8h1.6M13.2 8h1.6M3.2 3.2l1.1 1.1M11.7 11.7l1.1 1.1M3.2 12.8l1.1-1.1M11.7 4.3l1.1-1.1"/></svg></button><button data-t="dark" title="Dark" aria-label="Dark theme"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"><path d="M13.5 9.6A5.8 5.8 0 0 1 6.4 2.5a5.8 5.8 0 1 0 7.1 7.1z"/></svg></button></div><button id="safeBtn">Is it safe?</button><a href="https://github.com/buhaenko/lensy/issues">Report a bug</a><a href="https://buhaenko.github.io/lingo/">Lingo</a></nav>
 </footer>
 
 <dialog id="safe" aria-labelledby="safeTitle">
@@ -596,6 +676,21 @@
   document.getElementById('safeClose').onclick = () => safe.close();
   safe.addEventListener('click', e => { if (e.target === safe) safe.close(); });
   if (location.hash === '#faq') safe.showModal();
+</script>
+
+<script>
+  // theme switch: auto (follows macOS) · light · dark — remembered on this device
+  (() => {
+    const root = document.documentElement, buttons = document.querySelectorAll('.theme button');
+    const show = () => buttons.forEach(b => b.setAttribute('aria-pressed', String(b.dataset.t === (root.dataset.theme || 'auto'))));
+    buttons.forEach(b => b.addEventListener('click', () => {
+      const t = b.dataset.t;
+      if (t === 'auto') delete root.dataset.theme; else root.dataset.theme = t;
+      try { t === 'auto' ? localStorage.removeItem('theme') : localStorage.setItem('theme', t); } catch (e) {}
+      show();
+    }));
+    show();
+  })();
 </script>
 </body>
 </html>

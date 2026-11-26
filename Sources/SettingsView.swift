@@ -14,6 +14,7 @@ struct SettingsView: View {
     @State private var shortcutLabel = ScanHotKey.label
     @State private var recording = false
     @State private var recorderMonitor: Any?
+    @State private var appearance = Appearance.current
     @AppStorage("autoCopy") private var autoCopy = false
     @AppStorage("showOriginal") private var showOriginal = true
     @AppStorage("saveHistory") private var saveHistory = true
@@ -123,6 +124,16 @@ struct SettingsView: View {
             }
 
             group("General") {
+                row("Appearance") {
+                    Picker("", selection: $appearance) {
+                        ForEach(Appearance.allCases) { choice in
+                            Label(choice.title, systemImage: choice.symbol).tag(choice)
+                        }
+                    }
+                    .labelsHidden().pickerStyle(.segmented).fixedSize()
+                    .onChange(of: appearance) { _, choice in Appearance.apply(choice) }
+                }
+                Divider().padding(.leading, 12)
                 row("Menu bar icon") {
                     Picker("", selection: $menuBarIcon) {
                         ForEach(MenuBarIcon.allCases) { icon in
