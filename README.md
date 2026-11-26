@@ -10,7 +10,7 @@
 </p>
 
 <p align="center">
-  <a href="https://buhaenko.github.io/lensy/">Website</a> ·
+  <a href="https://getlensy.app/">Website</a> ·
   <a href="https://github.com/buhaenko/lensy/releases/latest">Download</a>
 </p>
 
@@ -21,7 +21,7 @@
 ## Install
 
 ```sh
-curl -fsSL https://buhaenko.github.io/lensy/install.sh | bash
+curl -fsSL https://getlensy.app/install.sh | bash
 ```
 
 That’s it — Lensy lands in Applications and appears in the menu bar.
@@ -49,13 +49,15 @@ Text recognition ([Vision](https://developer.apple.com/documentation/vision)) an
 ([Translation](https://developer.apple.com/documentation/translation)) run on your Mac. Lensy sends nothing anywhere —
 no analytics, no accounts. The only download is a language pack, by macOS itself, the first time you translate into a new language.
 Once a day Lensy asks GitHub whether there's a new version; that request carries nothing about you or what you scanned (turn it off in Settings).
+*Send Feedback…* sends only what you type there — your email and message — plus the app and macOS version.
 
 It asks for two permissions: **Screen Recording** to read the area you select, and **Accessibility** for the quick-scan key.
 
 ## Build from source
 
 ```sh
-scripts/test.sh          # 130 unit + integration tests
+scripts/test.sh          # 200+ unit, integration and crash tests
+scripts/e2e.sh           # runs the built app: launch, single instance, broken data, hard kills, crash reports
 scripts/build.sh 1.0.0   # → build/Lensy.app, Lensy.dmg, Lensy.zip
 ```
 

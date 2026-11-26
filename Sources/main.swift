@@ -6,7 +6,7 @@ import AppKit
 MainActor.assumeIsolated { runTests() }
 #else
 MainActor.assumeIsolated {
-    Migration.fromLens()
+    if !AppDelegate.e2e { Migration.fromLens() }
     let app = NSApplication.shared
     let delegate = AppDelegate()
     app.delegate = delegate

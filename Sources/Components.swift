@@ -30,3 +30,10 @@ struct VisualEffect: NSViewRepresentable {
         return image
     }
 }
+
+extension NSMenuItem {
+    /// macOS 27 hides menu item images unless asked; the menu's icons are part of its design.
+    func showsImage() {
+        if #available(macOS 27.0, *) { preferredImageVisibility = .visible }
+    }
+}

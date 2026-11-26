@@ -12,6 +12,7 @@ import Carbon.HIToolbox
     var panel: PopupPanel!
     var settingsWindow: NSWindow?
     var introWindow: NSWindow?
+    var feedbackWindow: NSWindow?
     var sizeObserver: AnyCancellable?
     weak var updateItem: NSMenuItem?
 
@@ -40,12 +41,14 @@ import Carbon.HIToolbox
         installEditMenu()
         setUpStatusItem()
         setUpPopupPanel()
+        NSLog("Lensy: launched \(Updater.currentVersion)")
+        if Self.e2e { return }               // end-to-end test copy: no global keys, prompts, windows or update checks
         registerHotKey()
         installQuickScanTap()
         Permissions.requestScreen()
         Updater.shared.isIdle = { [weak self] in
             guard let self else { return true }
-            return !self.capturing && !self.panel.isVisible && !self.popover.isShown && !(self.settingsWindow?.isVisible ?? false) && !(self.introWindow?.isVisible ?? false)
+            return !self.capturing && !self.panel.isVisible && !self.popover.isShown && !(self.settingsWindow?.isVisible ?? false) && !(self.introWindow?.isVisible ?? false) && !(self.feedbackWindow?.isVisible ?? false)
         }
         Updater.shared.onChange = { [weak self] in self?.showUpdateState() }
         Updater.shared.start()
@@ -59,6 +62,9 @@ import Carbon.HIToolbox
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) { self.openSettings() }   // show what's missing
         }
     }
+
+    /// Set by scripts/e2e.sh, which runs a renamed copy next to the real app.
+    static let e2e = ProcessInfo.processInfo.environment["LENSY_E2E"] == "1"
 
     /// Opening Lensy again (Finder, Spotlight) shows Settings — the way back when the menu bar is crowded.
     func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows: Bool) -> Bool {
@@ -76,7 +82,10 @@ import Carbon.HIToolbox
             exit(0)
         }
         center.addObserver(forName: .init(id + ".open"), object: nil, queue: .main) { [weak self] _ in
-            MainActor.assumeIsolated { self?.openSettings() }
+            MainActor.assumeIsolated {
+                if Self.e2e { NSLog("Lensy: asked to open"); return }
+                self?.openSettings()
+            }
         }
         return true
     }
@@ -117,18 +126,7 @@ import Carbon.HIToolbox
     }
 
     private func showStatusMenu() {
-        let menu = NSMenu()
-        menu.autoenablesItems = false
-        menu.addItem(item("Scan & Translate", "text.viewfinder", #selector(capture)))
-        menu.addItem(item("Clear History", "trash", #selector(clearHistory)))
-        menu.addItem(.separator())
-        menu.addItem(item("Settings…", "gearshape", #selector(openSettings), key: ","))
-        let update = item("", "", #selector(checkForUpdates))
-        updateItem = update
-        showUpdateState()
-        menu.addItem(update)
-        menu.addItem(.separator())
-        menu.addItem(item("Quit Lensy", "power", #selector(NSApplication.terminate(_:)), key: "q"))
+        let menu = makeStatusMenu()
         Updater.shared.refreshIfStale()   // the line updates in place while the menu is open
         statusItem.menu = menu
         statusItem.button?.performClick(nil)
@@ -136,10 +134,28 @@ import Carbon.HIToolbox
         updateItem = nil
     }
 
+    func makeStatusMenu() -> NSMenu {
+        let menu = NSMenu()
+        menu.autoenablesItems = false
+        menu.addItem(item("Scan & Translate", "text.viewfinder", #selector(capture)))
+        menu.addItem(item("Clear History", "trash", #selector(clearHistory)))
+        menu.addItem(.separator())
+        menu.addItem(item("Settings…", "gearshape", #selector(openSettings), key: ","))
+        menu.addItem(item("Send Feedback…", "envelope", #selector(openFeedback)))
+        let update = item("", "", #selector(checkForUpdates))
+        updateItem = update
+        showUpdateState()
+        menu.addItem(update)
+        menu.addItem(.separator())
+        menu.addItem(item("Quit Lensy", "power", #selector(NSApplication.terminate(_:)), key: "q"))
+        return menu
+    }
+
     private func item(_ title: String, _ symbol: String, _ action: Selector, key: String = "") -> NSMenuItem {
         let item = NSMenuItem(title: title, action: action, keyEquivalent: key)
         item.target = action == #selector(NSApplication.terminate(_:)) ? NSApp : self
         item.image = NSImage(systemSymbolName: symbol, accessibilityDescription: nil)
+        item.showsImage()
         return item
     }
 
@@ -152,6 +168,7 @@ import Carbon.HIToolbox
         updateItem.isEnabled = line.enabled
         let config = line.highlighted ? NSImage.SymbolConfiguration(paletteColors: [.white, .controlAccentColor]) : nil
         updateItem.image = NSImage(systemSymbolName: line.symbol, accessibilityDescription: nil)?.withSymbolConfiguration(config ?? .init())
+        updateItem.showsImage()
     }
 
     @objc func clearHistory() { History.shared.clear() }
@@ -177,6 +194,30 @@ import Carbon.HIToolbox
         NSApp.activate(ignoringOtherApps: true)
         settingsWindow?.makeKeyAndOrderFront(nil)
     }
+
+    @objc func openFeedback() {
+        popover.performClose(nil)
+        if feedbackWindow == nil {
+            let host = NSHostingController(rootView: FeedbackView { [weak self] in self?.closeFeedback() })
+            host.sizingOptions = [.preferredContentSize]
+            let window = NSWindow(contentViewController: host)
+            window.title = "Send Feedback"
+            window.titleVisibility = .hidden
+            window.styleMask = [.titled, .closable, .fullSizeContentView]
+            window.titlebarAppearsTransparent = true
+            window.isReleasedWhenClosed = false
+            window.isMovableByWindowBackground = true
+            window.center()
+            feedbackWindow = window
+            NotificationCenter.default.addObserver(forName: NSWindow.willCloseNotification, object: window, queue: .main) { [weak self] _ in
+                MainActor.assumeIsolated { self?.feedbackWindow = nil }   // a fresh form next time
+            }
+        }
+        NSApp.activate(ignoringOtherApps: true)
+        feedbackWindow?.makeKeyAndOrderFront(nil)
+    }
+
+    private func closeFeedback() { feedbackWindow?.close() }
 
     /// Pick languages and download them for offline use — first run, or "Download languages…" in Settings.
     @objc func openIntro() {

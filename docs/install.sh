@@ -1,7 +1,7 @@
 #!/bin/bash
-# Lensy installer — https://buhaenko.github.io/lensy/
-#   curl -fsSL <site>/lensy/install.sh | bash
-#   curl -fsSL <site>/lensy/install.sh | bash -s -- uninstall
+# Lensy installer — https://getlensy.app/
+#   curl -fsSL https://getlensy.app/install.sh | bash
+#   curl -fsSL https://getlensy.app/install.sh | bash -s -- uninstall
 # Downloads Lensy.zip next to this script, installs it into /Applications (or ~/Applications) and starts it.
 # Files fetched with curl carry no quarantine flag, so macOS opens the app without the "unidentified developer" prompt.
 set -euo pipefail
@@ -56,4 +56,4 @@ xattr -dr com.apple.quarantine "${DEST}/${APP}.app" 2>/dev/null || true
 
 [ -n "${INSTALL_NO_OPEN:-}" ] || open "${DEST}/${APP}.app"
 say "${bold}✓ ${APP} is installed${reset} ${dim}(${DEST}/${APP}.app)${reset}"
-say "${dim}It lives in your menu bar. Uninstall: curl -fsSL https://buhaenko.github.io/lensy/install.sh | bash -s -- uninstall${reset}"
+say "${dim}It lives in your menu bar. Uninstall: curl -fsSL https://getlensy.app/install.sh | bash -s -- uninstall${reset}"

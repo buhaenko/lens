@@ -42,8 +42,11 @@ struct Scan: Codable, Identifiable, Equatable {
     /// The app's history. Tests point this at a temporary file before anything is recorded.
     static var shared = History()
 
+    /// "Lensy" — or the renamed copy's own name (scripts/e2e.sh), so a test run never touches the real history.
+    nonisolated static var folderName: String { Bundle.main.object(forInfoDictionaryKey: "CFBundleName") as? String ?? "Lensy" }
+
     nonisolated static let defaultURL: URL = {
-        let folder = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0].appendingPathComponent("Lensy")
+        let folder = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0].appendingPathComponent(folderName)
         try? FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
         return folder.appendingPathComponent("history.json")
     }()
