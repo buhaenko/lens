@@ -32,7 +32,7 @@ func recognize(_ image: CGImage) async -> String {
                 try VNImageRequestHandler(cgImage: image).perform([request])
                 continuation.resume(returning: assemble(request.results ?? []))
             } catch {
-                NSLog("Lens: text recognition failed: %@", error.localizedDescription)
+                NSLog("Lensy: text recognition failed: %@", error.localizedDescription)
                 continuation.resume(returning: "")
             }
         }

@@ -8,14 +8,14 @@ extension AppDelegate {
         if capturing {
             if !overlays.isEmpty { selectionFinished(nil); return }             // the same key again closes the selection
             guard Date().timeIntervalSince(captureStartedAt) > 15 else { return }   // a scan is still running
-            NSLog("Lens: the last scan never finished — starting over")
+            NSLog("Lensy: the last scan never finished — starting over")
         }
         capturing = true
         captureStartedAt = Date()
         hidePopup()
         popover.performClose(nil)
 
-        // Lens has to be the active app to own the cursor — over full-screen videos and games too.
+        // Lensy has to be the active app to own the cursor — over full-screen videos and games too.
         // The app you were in gets focus back as soon as the selection is done.
         let front = NSWorkspace.shared.frontmostApplication
         previousApp = front == .current ? nil : front

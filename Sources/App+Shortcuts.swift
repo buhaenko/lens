@@ -22,7 +22,7 @@ extension AppDelegate {
         if let hotKey { UnregisterEventHotKey(hotKey); self.hotKey = nil }
         let id = EventHotKeyID(signature: OSType(0x4C454E53), id: 1)   // 'LENS'
         let status = RegisterEventHotKey(UInt32(ScanHotKey.keyCode), UInt32(ScanHotKey.mods), id, GetApplicationEventTarget(), 0, &hotKey)
-        if status != noErr { NSLog("Lens: scan shortcut %@ is taken by another app (%d)", ScanHotKey.label, status) }
+        if status != noErr { NSLog("Lensy: scan shortcut %@ is taken by another app (%d)", ScanHotKey.label, status) }
     }
 
     // MARK: - Quick-scan tap
@@ -44,7 +44,7 @@ extension AppDelegate {
             MainActor.assumeIsolated { self?.handleQuickScan(event) }
             return event
         }) { tapMonitors.append(local) }
-        NSLog("Lens: quick-scan key active")
+        NSLog("Lensy: quick-scan key active")
     }
 
     /// A tap = the modifier goes down alone and comes back up within 0.35 s, with nothing else in between.

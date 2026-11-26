@@ -11,6 +11,7 @@ import Carbon.HIToolbox
     let popover = NSPopover()
     var panel: PopupPanel!
     var settingsWindow: NSWindow?
+    var introWindow: NSWindow?
     var sizeObserver: AnyCancellable?
     weak var updateItem: NSMenuItem?
 
@@ -44,23 +45,28 @@ import Carbon.HIToolbox
         Permissions.requestScreen()
         Updater.shared.isIdle = { [weak self] in
             guard let self else { return true }
-            return !self.capturing && !self.panel.isVisible && !self.popover.isShown && !(self.settingsWindow?.isVisible ?? false)
+            return !self.capturing && !self.panel.isVisible && !self.popover.isShown && !(self.settingsWindow?.isVisible ?? false) && !(self.introWindow?.isVisible ?? false)
         }
         Updater.shared.onChange = { [weak self] in self?.showUpdateState() }
         Updater.shared.start()
-        if !defaults.bool(forKey: "onboarded") || !CGPreflightScreenCaptureAccess() {
+        NotificationCenter.default.addObserver(forName: IntroView.open, object: nil, queue: .main) { [weak self] _ in
+            MainActor.assumeIsolated { self?.openIntro() }
+        }
+        if !defaults.bool(forKey: "onboarded") {
             defaults.set(true, forKey: "onboarded")
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) { self.openSettings() }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) { self.openIntro() }      // languages + permission, first run only
+        } else if !CGPreflightScreenCaptureAccess() {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) { self.openSettings() }   // show what's missing
         }
     }
 
-    /// Opening Lens again (Finder, Spotlight) shows Settings — the way back when the menu bar is crowded.
+    /// Opening Lensy again (Finder, Spotlight) shows Settings — the way back when the menu bar is crowded.
     func applicationShouldHandleReopen(_ sender: NSApplication, hasVisibleWindows: Bool) -> Bool {
         openSettings()
         return false
     }
 
-    /// If Lens is already running, ask that copy to show Settings and quit this one.
+    /// If Lensy is already running, ask that copy to show Settings and quit this one.
     private func becomeSingleInstance() -> Bool {
         guard let id = Bundle.main.bundleIdentifier else { return true }
         let center = DistributedNotificationCenter.default()
@@ -122,7 +128,7 @@ import Carbon.HIToolbox
         showUpdateState()
         menu.addItem(update)
         menu.addItem(.separator())
-        menu.addItem(item("Quit Lens", "power", #selector(NSApplication.terminate(_:)), key: "q"))
+        menu.addItem(item("Quit Lensy", "power", #selector(NSApplication.terminate(_:)), key: "q"))
         Updater.shared.refreshIfStale()   // the line updates in place while the menu is open
         statusItem.menu = menu
         statusItem.button?.performClick(nil)
@@ -137,7 +143,7 @@ import Carbon.HIToolbox
         return item
     }
 
-    /// "Lens Is Up to Date · 1.2.1 is the latest version", "Update to Lens 1.3…", "Checking…".
+    /// "Lensy Is Up to Date · 1.2.1 is the latest version", "Update to Lensy 1.3…", "Checking…".
     func showUpdateState() {
         guard let updateItem else { return }
         let line = Updater.menuLine(Updater.shared.state, version: Updater.currentVersion, enabled: Updater.enabled)
@@ -159,7 +165,7 @@ import Carbon.HIToolbox
             let host = NSHostingController(rootView: SettingsView())
             host.sizingOptions = [.preferredContentSize]
             let window = NSWindow(contentViewController: host)
-            window.title = "Lens"
+            window.title = "Lensy"
             window.titleVisibility = .hidden
             window.styleMask = [.titled, .closable, .fullSizeContentView]
             window.titlebarAppearsTransparent = true
@@ -170,5 +176,25 @@ import Carbon.HIToolbox
         }
         NSApp.activate(ignoringOtherApps: true)
         settingsWindow?.makeKeyAndOrderFront(nil)
+    }
+
+    /// Pick languages and download them for offline use — first run, or "Download languages…" in Settings.
+    @objc func openIntro() {
+        popover.performClose(nil)
+        if introWindow == nil {
+            let host = NSHostingController(rootView: IntroView(downloads: LanguageDownloads()) { [weak self] in self?.introWindow?.close() })
+            host.sizingOptions = [.preferredContentSize]
+            let window = NSWindow(contentViewController: host)
+            window.title = "Welcome to Lensy"
+            window.titleVisibility = .hidden
+            window.styleMask = [.titled, .closable, .fullSizeContentView]
+            window.titlebarAppearsTransparent = true
+            window.isReleasedWhenClosed = false
+            window.isMovableByWindowBackground = true
+            window.center()
+            introWindow = window
+        }
+        NSApp.activate(ignoringOtherApps: true)
+        introWindow?.makeKeyAndOrderFront(nil)
     }
 }

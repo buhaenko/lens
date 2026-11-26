@@ -48,7 +48,7 @@ extension AppDelegate: NSWindowDelegate {
         panel.setFrame(NSRect(origin: origin, size: size), display: true)
         panel.alphaValue = 0
         shownAt = Date()
-        panel.orderFrontRegardless()    // on top even though Lens isn't the active app
+        panel.orderFrontRegardless()    // on top even though Lensy isn't the active app
         panel.makeKey()                 // non-activating: takes keys without stealing focus
         NSAnimationContext.runAnimationGroup { $0.duration = 0.14; panel.animator().alphaValue = 1 }
         panel.invalidateShadow()
@@ -124,7 +124,7 @@ extension AppDelegate: NSWindowDelegate {
     }
 }
 
-/// Borderless panel that can take keyboard focus without activating Lens.
+/// Borderless panel that can take keyboard focus without activating Lensy.
 final class PopupPanel: NSPanel {
     override var canBecomeKey: Bool { true }
 }

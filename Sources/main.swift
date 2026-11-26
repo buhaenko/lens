@@ -1,4 +1,4 @@
-// Lens — select any area of the screen, read the text and translate it, on-device.
+// Lensy — select any area of the screen, read the text and translate it, on-device.
 
 import AppKit
 
@@ -6,6 +6,7 @@ import AppKit
 MainActor.assumeIsolated { runTests() }
 #else
 MainActor.assumeIsolated {
+    Migration.fromLens()
     let app = NSApplication.shared
     let delegate = AppDelegate()
     app.delegate = delegate

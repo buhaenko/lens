@@ -1,4 +1,4 @@
-// Updates: checks the latest GitHub release once a day, installs it when Lens is idle and restarts.
+// Updates: checks the latest GitHub release once a day, installs it when Lensy is idle and restarts.
 // Every update archive is signed (Ed25519, scripts/sign-update.swift); anything that doesn't verify is ignored.
 
 import AppKit
@@ -8,11 +8,11 @@ import CryptoKit
     static let shared = Updater()
 
     nonisolated static let publicKey = "gxyL+hDC5CLF7DexlMs406IZiXX7iGjWN+pwrKrrn0E="
-    nonisolated static let feed = URL(string: "https://api.github.com/repos/buhaenko/lens/releases/latest")!
-    nonisolated static let downloadPage = URL(string: "https://github.com/buhaenko/lens/releases/latest")!
-    nonisolated static let archiveName = "Lens.zip"
+    nonisolated static let feed = URL(string: "https://api.github.com/repos/buhaenko/lensy/releases/latest")!
+    nonisolated static let downloadPage = URL(string: "https://github.com/buhaenko/lensy/releases/latest")!
+    nonisolated static let archiveName = "Lensy.zip"
 
-    /// Lens isn't in the middle of something — safe to restart.
+    /// Lensy isn't in the middle of something — safe to restart.
     var isIdle: () -> Bool = { true }
     /// Called whenever `state` changes (the menu item redraws, even while the menu is open).
     var onChange: (() -> Void)?
@@ -40,16 +40,16 @@ import CryptoKit
         var errorDescription: String? {
             switch self {
             case .download: "Couldn’t download the update. Check your connection and try again."
-            case .badSignature: "The downloaded update isn’t signed by Lens, so it wasn’t installed."
+            case .badSignature: "The downloaded update isn’t signed by Lensy, so it wasn’t installed."
             case .badArchive: "The downloaded update looks broken, so it wasn’t installed."
-            case .notWritable: "Lens can’t replace itself in this folder. Download the new version and drag it to Applications."
+            case .notWritable: "Lensy can’t replace itself in this folder. Download the new version and drag it to Applications."
             }
         }
     }
 
     // MARK: - Schedule
 
-    /// Shortly after launch, then once a day; installs on its own when Lens is idle.
+    /// Shortly after launch, then once a day; installs on its own when Lensy is idle.
     func start() {
         guard Self.enabled else { return }
         Task {
@@ -96,9 +96,9 @@ import CryptoKit
         }
     }
 
-    /// interactive: asks first and explains failures. Automatic: silent, waits until Lens is idle.
+    /// interactive: asks first and explains failures. Automatic: silent, waits until Lensy is idle.
     func install(_ release: Release, interactive: Bool) async {
-        if interactive && !ask("Lens \(release.version) is available", "You have \(Self.currentVersion). Lens restarts in a second — your history and settings stay.", ok: "Install & Restart") { return }
+        if interactive && !ask("Lensy \(release.version) is available", "You have \(Self.currentVersion). Lensy restarts in a second — your history and settings stay.", ok: "Install & Restart") { return }
         state = .installing(release.version)
         do {
             let app = Bundle.main.bundleURL
@@ -106,16 +106,16 @@ import CryptoKit
             let staged = try await Self.prepare(release, replacing: app)
             while !interactive && !isIdle() { try await Task.sleep(for: .seconds(60)) }
             try Self.install(staged, over: app)
-            NSLog("Lens: updated to \(release.version), restarting")
+            NSLog("Lensy: updated to \(release.version), restarting")
             relaunch(app)
         } catch {
-            NSLog("Lens: update failed — \(error.localizedDescription)")
+            NSLog("Lensy: update failed — \(error.localizedDescription)")
             state = .available(release.version)
             guard interactive else { return }
             if case Failure.notWritable = error {
-                if ask("Update Lens manually", error.localizedDescription, ok: "Download") { NSWorkspace.shared.open(Self.downloadPage) }
+                if ask("Update Lensy manually", error.localizedDescription, ok: "Download") { NSWorkspace.shared.open(Self.downloadPage) }
             } else {
-                tell("Lens couldn’t update", (error as? Failure)?.errorDescription ?? Failure.download.errorDescription!)
+                tell("Lensy couldn’t update", (error as? Failure)?.errorDescription ?? Failure.download.errorDescription!)
             }
         }
     }
@@ -130,12 +130,12 @@ import CryptoKit
     nonisolated static func menuLine(_ state: State, version: String, enabled: Bool = true) -> MenuLine {
         guard enabled else { return MenuLine(title: "Development Build", subtitle: "Updates are off", symbol: "hammer", enabled: false) }
         switch state {
-        case .unknown: return MenuLine(title: "Check for Updates…", subtitle: "Lens \(version)", symbol: "arrow.triangle.2.circlepath", enabled: true)
-        case .checking: return MenuLine(title: "Checking for Updates…", subtitle: "Lens \(version)", symbol: "arrow.triangle.2.circlepath", enabled: false)
-        case .upToDate: return MenuLine(title: "Lens Is Up to Date", subtitle: "\(version) is the latest version", symbol: "checkmark.circle", enabled: true)
+        case .unknown: return MenuLine(title: "Check for Updates…", subtitle: "Lensy \(version)", symbol: "arrow.triangle.2.circlepath", enabled: true)
+        case .checking: return MenuLine(title: "Checking for Updates…", subtitle: "Lensy \(version)", symbol: "arrow.triangle.2.circlepath", enabled: false)
+        case .upToDate: return MenuLine(title: "Lensy Is Up to Date", subtitle: "\(version) is the latest version", symbol: "checkmark.circle", enabled: true)
         case .failed: return MenuLine(title: "Check for Updates…", subtitle: "Couldn’t connect — try again", symbol: "exclamationmark.arrow.triangle.2.circlepath", enabled: true)
-        case .available(let new): return MenuLine(title: "Update to Lens \(new)…", subtitle: "You have \(version)", symbol: "arrow.down.circle.fill", enabled: true, highlighted: true)
-        case .installing(let new): return MenuLine(title: "Installing Lens \(new)…", subtitle: "Lens restarts when it’s done", symbol: "arrow.down.circle", enabled: false)
+        case .available(let new): return MenuLine(title: "Update to Lensy \(new)…", subtitle: "You have \(version)", symbol: "arrow.down.circle.fill", enabled: true, highlighted: true)
+        case .installing(let new): return MenuLine(title: "Installing Lensy \(new)…", subtitle: "Lensy restarts when it’s done", symbol: "arrow.down.circle", enabled: false)
         }
     }
 

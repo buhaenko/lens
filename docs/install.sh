@@ -1,15 +1,15 @@
 #!/bin/bash
-# Lens installer — https://buhaenko.github.io/lens/
-#   curl -fsSL <site>/lens/install.sh | bash
-#   curl -fsSL <site>/lens/install.sh | bash -s -- uninstall
-# Downloads Lens.zip next to this script, installs it into /Applications (or ~/Applications) and starts it.
+# Lensy installer — https://buhaenko.github.io/lensy/
+#   curl -fsSL <site>/lensy/install.sh | bash
+#   curl -fsSL <site>/lensy/install.sh | bash -s -- uninstall
+# Downloads Lensy.zip next to this script, installs it into /Applications (or ~/Applications) and starts it.
 # Files fetched with curl carry no quarantine flag, so macOS opens the app without the "unidentified developer" prompt.
 set -euo pipefail
 
-APP="Lens"
-BID="com.serhii.Lens"
+APP="Lensy"
+BID="com.serhii.Lensy"
 MINOS="15.0"
-BASE="${INSTALL_BASE_URL:-https://github.com/buhaenko/lens/releases/latest/download}"   # where Lens.zip lives
+BASE="${INSTALL_BASE_URL:-https://github.com/buhaenko/lensy/releases/latest/download}"   # where Lensy.zip lives
 
 bold=$(tput bold 2>/dev/null || true); dim=$(tput dim 2>/dev/null || true); reset=$(tput sgr0 2>/dev/null || true)
 say() { printf "%s\n" "$*"; }
@@ -45,9 +45,15 @@ ditto -x -k "$tmp/${APP}.zip" "$tmp"
 
 [ -n "${INSTALL_DEST:-}" ] || { pkill -x "${APP}" 2>/dev/null || true; sleep 0.5; }
 rm -rf "${DEST}/${APP}.app"
+# Lensy used to be called Lens — replace that copy too (its settings and history carry over)
+if [ -z "${INSTALL_DEST:-}" ]; then
+  for old in "/Applications/Lens.app" "$HOME/Applications/Lens.app"; do
+    [ "$(defaults read "$old/Contents/Info" CFBundleIdentifier 2>/dev/null)" = "com.serhii.Lens" ] && { pkill -x Lens 2>/dev/null || true; rm -rf "$old"; }
+  done
+fi
 ditto "$tmp/${APP}.app" "${DEST}/${APP}.app"
 xattr -dr com.apple.quarantine "${DEST}/${APP}.app" 2>/dev/null || true
 
 [ -n "${INSTALL_NO_OPEN:-}" ] || open "${DEST}/${APP}.app"
 say "${bold}✓ ${APP} is installed${reset} ${dim}(${DEST}/${APP}.app)${reset}"
-say "${dim}It lives in your menu bar. Uninstall: curl -fsSL https://buhaenko.github.io/lens/install.sh | bash -s -- uninstall${reset}"
+say "${dim}It lives in your menu bar. Uninstall: curl -fsSL https://buhaenko.github.io/lensy/install.sh | bash -s -- uninstall${reset}"

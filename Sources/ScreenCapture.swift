@@ -23,7 +23,7 @@ func captureScreen(_ r: NSRect) async -> CGImage? {
         config.captureResolution = .best
         return try await SCScreenshotManager.captureImage(contentFilter: filter, configuration: config)
     } catch {
-        NSLog("Lens: capture failed: %@", error.localizedDescription)
+        NSLog("Lensy: capture failed: %@", error.localizedDescription)
         return nil
     }
 }

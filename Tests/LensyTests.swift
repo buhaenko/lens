@@ -1,4 +1,4 @@
-// Lens tests — compiled together with main.swift (-D TESTING). Run: ./test.sh
+// Lensy tests — compiled together with main.swift (-D TESTING). Run: ./test.sh
 import Cocoa
 import Vision
 import Translation
@@ -75,15 +75,15 @@ final class UnsafeMutableTransferBox<T>: @unchecked Sendable { var value: T; ini
     expect(Updater.isNewer("1.2.1", than: "1.2.0") && Updater.isNewer("1.2.10", than: "1.2.9") && Updater.isNewer("1.3", than: "1.2.9"), "newer versions compare numerically")
     expect(!Updater.isNewer("1.2.0", than: "1.2.0") && !Updater.isNewer("1.1.9", than: "1.2.0") && !Updater.isNewer("1.2", than: "1.2.0"), "same or older is never an update")
     expect(!Updater.isNewer("2.0-beta", than: "1.0") && !Updater.isRelease("ci") && !Updater.isRelease("0.0.0-dev"), "pre-releases and dev builds are ignored")
-    let feedJSON = #"{"tag_name":"v1.4.0","assets":[{"name":"Lens.dmg","browser_download_url":"https://x/Lens.dmg"},{"name":"Lens.zip","browser_download_url":"https://x/Lens.zip"},{"name":"Lens.zip.sig","browser_download_url":"https://x/Lens.zip.sig"}]}"#
-    expectEqual(Updater.parse(Data(feedJSON.utf8)), Updater.Release(version: "1.4.0", archive: URL(string: "https://x/Lens.zip")!, signature: URL(string: "https://x/Lens.zip.sig")!), "GitHub release JSON → version, archive, signature")
-    expect(Updater.parse(Data(feedJSON.replacingOccurrences(of: "Lens.zip.sig", with: "other").utf8)) == nil, "a release without a signature is never installed")
+    let feedJSON = #"{"tag_name":"v1.4.0","assets":[{"name":"Lensy.dmg","browser_download_url":"https://x/Lensy.dmg"},{"name":"Lensy.zip","browser_download_url":"https://x/Lensy.zip"},{"name":"Lensy.zip.sig","browser_download_url":"https://x/Lensy.zip.sig"}]}"#
+    expectEqual(Updater.parse(Data(feedJSON.utf8)), Updater.Release(version: "1.4.0", archive: URL(string: "https://x/Lensy.zip")!, signature: URL(string: "https://x/Lensy.zip.sig")!), "GitHub release JSON → version, archive, signature")
+    expect(Updater.parse(Data(feedJSON.replacingOccurrences(of: "Lensy.zip.sig", with: "other").utf8)) == nil, "a release without a signature is never installed")
     expect(Data(base64Encoded: Updater.publicKey).flatMap { try? Curve25519.Signing.PublicKey(rawRepresentation: $0) } != nil, "the built-in public key is a valid Ed25519 key")
 
     let line = { (state: Updater.State) in Updater.menuLine(state, version: "1.2.1") }
-    expectEqual(line(.upToDate).title, "Lens Is Up to Date", "menu: up to date")
+    expectEqual(line(.upToDate).title, "Lensy Is Up to Date", "menu: up to date")
     expectEqual(line(.upToDate).subtitle, "1.2.1 is the latest version", "menu: says which version is the latest")
-    expect(line(.available("1.3.0")).title == "Update to Lens 1.3.0…" && line(.available("1.3.0")).highlighted, "menu: a new version stands out")
+    expect(line(.available("1.3.0")).title == "Update to Lensy 1.3.0…" && line(.available("1.3.0")).highlighted, "menu: a new version stands out")
     expect(!line(.checking).enabled && !line(.installing("1.3.0")).enabled, "menu: no double clicks while checking or installing")
     expect(!Updater.menuLine(.unknown, version: "dev", enabled: false).enabled, "menu: development builds can't update")
     for symbol in [Updater.State.unknown, .checking, .upToDate, .failed, .available("2"), .installing("2")].map({ line($0).symbol }) {
@@ -92,21 +92,21 @@ final class UnsafeMutableTransferBox<T>: @unchecked Sendable { var value: T; ini
     let feedFile = tmp.appendingPathComponent("feed.json")
     try? Data(feedJSON.utf8).write(to: feedFile)
     let foundRelease = blocking { await Updater.shared.refresh(feed: feedFile) }
-    expect(foundRelease?.version == "1.4.0" && Updater.shared.state == .available("1.4.0"), "check finds a newer release → “Update to Lens 1.4.0…”")
+    expect(foundRelease?.version == "1.4.0" && Updater.shared.state == .available("1.4.0"), "check finds a newer release → “Update to Lensy 1.4.0…”")
     try? Data(feedJSON.replacingOccurrences(of: "v1.4.0", with: "v0").utf8).write(to: feedFile)
     _ = blocking { await Updater.shared.refresh(feed: feedFile) }
-    expectEqual(Updater.shared.state, .upToDate, "same version → “Lens Is Up to Date”")
+    expectEqual(Updater.shared.state, .upToDate, "same version → “Lensy Is Up to Date”")
     _ = blocking { await Updater.shared.refresh(feed: tmp.appendingPathComponent("missing.json")) }
     expectEqual(Updater.shared.state, .failed, "no connection → “Couldn’t connect — try again”")
 
     // end to end on a fake bundle: sign → "download" (file://) → verify → unpack → install over an older copy
     let key = Curve25519.Signing.PrivateKey(), pub = key.publicKey.rawRepresentation.base64EncodedString()
-    let testID = "com.serhii.Lens.updatetest"
+    let testID = "com.serhii.Lensy.updatetest"
     func fakeApp(_ dir: URL, version: String, id: String = testID) -> URL {
-        let app = dir.appendingPathComponent("Lens.app")
+        let app = dir.appendingPathComponent("Lensy.app")
         try? FileManager.default.createDirectory(at: app.appendingPathComponent("Contents/MacOS"), withIntermediateDirectories: true)
-        try? FileManager.default.copyItem(atPath: "/usr/bin/true", toPath: app.appendingPathComponent("Contents/MacOS/Lens").path)
-        (["CFBundleIdentifier": id, "CFBundleExecutable": "Lens", "CFBundlePackageType": "APPL", "CFBundleShortVersionString": version] as NSDictionary)
+        try? FileManager.default.copyItem(atPath: "/usr/bin/true", toPath: app.appendingPathComponent("Contents/MacOS/Lensy").path)
+        (["CFBundleIdentifier": id, "CFBundleExecutable": "Lensy", "CFBundlePackageType": "APPL", "CFBundleShortVersionString": version] as NSDictionary)
             .write(to: app.appendingPathComponent("Contents/Info.plist"), atomically: true)
         shell("/usr/bin/codesign", "--force", "-s", "-", app.path)
         return app
@@ -114,13 +114,13 @@ final class UnsafeMutableTransferBox<T>: @unchecked Sendable { var value: T; ini
     func release(_ name: String, version: String, bundleVersion: String? = nil, id: String = testID, tamper: Bool = false) -> Updater.Release {
         let dir = tmp.appendingPathComponent("rel-\(name)")
         let app = fakeApp(dir, version: bundleVersion ?? version, id: id)
-        let zip = dir.appendingPathComponent("Lens.zip")
+        let zip = dir.appendingPathComponent("Lensy.zip")
         shell("/usr/bin/ditto", "-c", "-k", "--keepParent", app.path, zip.path)
         var data = (try? Data(contentsOf: zip)) ?? Data()
         let sig = (try? key.signature(for: data).base64EncodedString()) ?? ""
         if tamper { data[data.count / 2] ^= 0xFF; try? data.write(to: zip) }
-        try? Data(sig.utf8).write(to: dir.appendingPathComponent("Lens.zip.sig"))
-        return Updater.Release(version: version, archive: zip, signature: dir.appendingPathComponent("Lens.zip.sig"))
+        try? Data(sig.utf8).write(to: dir.appendingPathComponent("Lensy.zip.sig"))
+        return Updater.Release(version: version, archive: zip, signature: dir.appendingPathComponent("Lensy.zip.sig"))
     }
     let installed = fakeApp(tmp.appendingPathComponent("Applications"), version: "1.0.0")
     func prepare(_ r: Updater.Release, publicKey: String? = nil) -> Result<URL, Error> {
@@ -159,6 +159,44 @@ final class UnsafeMutableTransferBox<T>: @unchecked Sendable { var value: T; ini
     section("Selection pointer")
     expect(Crosshair.cursor.image.size == NSSize(width: 24, height: 24) && Crosshair.cursor.hotSpot == NSPoint(x: 12, y: 12), "a small cross that aims at its centre")
     expect(Crosshair.image.cgImage(forProposedRect: nil, context: nil, hints: nil) != nil, "draws")
+
+    section("Renamed from Lens — nothing is lost")
+    do {
+        let suite = "lensy-migration-\(UUID().uuidString)"
+        let store = UserDefaults(suiteName: suite)!
+        let support = FileManager.default.temporaryDirectory.appendingPathComponent(suite)
+        let oldDir = support.appendingPathComponent("Lens")
+        try? FileManager.default.createDirectory(at: oldDir, withIntermediateDirectories: true)
+        try? Data("[]".utf8).write(to: oldDir.appendingPathComponent("history.json"))
+        store.set(["en"], forKey: "languages")
+        Migration.fromLens(defaults: store, old: ["languages": ["uk", "de"], "tapKey": "rightCommand", "onboarded": true], support: support)
+        expectEqual(store.string(forKey: "tapKey"), "rightCommand", "old settings come along")
+        expectEqual(store.stringArray(forKey: "languages"), ["en"], "settings already made in Lensy win")
+        expect(FileManager.default.fileExists(atPath: support.appendingPathComponent("Lensy/history.json").path), "history moves to the new folder")
+        expect(!FileManager.default.fileExists(atPath: oldDir.path), "the old folder is gone")
+        store.removeObject(forKey: "tapKey")
+        Migration.fromLens(defaults: store, old: ["tapKey": "rightCommand"], support: support)
+        expect(store.object(forKey: "tapKey") == nil, "runs only once")
+        UserDefaults.standard.removePersistentDomain(forName: suite)
+        try? FileManager.default.removeItem(at: support)
+    }
+
+    section("Intro — choose & download languages")
+    let savedLanguages = defaults.stringArray(forKey: "languages")
+    let dl = LanguageDownloads(selected: ["uk", "de", "en"])
+    expectEqual(dl.pairSource(for: "uk"), "en", "a language is downloaded as a pair with English")
+    expectEqual(dl.pairSource(for: "en"), "uk", "English pairs with another chosen language")
+    expect(LanguageDownloads(selected: ["en"]).pairSource(for: "en") == nil, "English alone needs no download")
+    dl.status = ["uk": .ready, "de": .needed, "en": .failed]
+    expectEqual(dl.needed, ["de", "en"], "“Download N languages” counts missing and failed ones")
+    dl.remove("de")
+    expectEqual(dl.selected, ["uk", "en"], "a language can be removed")
+    LanguageDownloads(selected: ["en"]).remove("en")
+    expectEqual(LanguageDownloads(selected: ["en"]).selected, ["en"], "the last language can't be removed")
+    let real = LanguageDownloads(selected: ["uk", "en"])
+    _ = blocking { await real.refresh() }
+    expect(["uk", "en"].allSatisfy { [.ready, .needed, .unsupported].contains(real.status[$0]) }, "real status from macOS: uk \(String(describing: real.status["uk"])), en \(String(describing: real.status["en"]))")
+    if let savedLanguages { defaults.set(savedLanguages, forKey: "languages") } else { defaults.removeObject(forKey: "languages") }
 
     section("Edit shortcuts in text fields")
     installEditMenu()
@@ -369,8 +407,8 @@ final class UnsafeMutableTransferBox<T>: @unchecked Sendable { var value: T; ini
         let img = blocking { await captureScreen(NSRect(x: main.minX + 10, y: main.maxY - 110, width: 200, height: 100)) }
         expect(img != nil, "captures a 200×100 pt rect")
         if let img { expect(img.width >= 200 && img.height >= 100, "captured at native resolution (\(img.width)×\(img.height) px)") }
-    } else { skip("screen capture", "the test runner has no Screen Recording permission (Lens itself does)") }
+    } else { skip("screen capture", "the test runner has no Screen Recording permission (Lensy itself does)") }
 
     try? FileManager.default.removeItem(at: tmp)
-    finish("Lens")
+    finish("Lensy")
 }

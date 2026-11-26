@@ -1,6 +1,6 @@
-// Signs an update archive with the release key, so Lens only installs updates that come from this repo.
+// Signs an update archive with the release key, so Lensy only installs updates that come from this repo.
 //
-//   UPDATE_SIGNING_KEY=<base64 Ed25519 private key> swift scripts/sign-update.swift build/Lens.zip > build/Lens.zip.sig
+//   UPDATE_SIGNING_KEY=<base64 Ed25519 private key> swift scripts/sign-update.swift build/Lensy.zip > build/Lensy.zip.sig
 //
 // The key lives in the repo's Actions secrets (and a backup in the login Keychain: "Lens update signing key").
 // The matching public key is Updater.publicKey.

@@ -21,13 +21,13 @@ jobs:
       - name: Sign the update
         env:
           UPDATE_SIGNING_KEY: ${{ secrets.UPDATE_SIGNING_KEY }}
-        run: swift scripts/sign-update.swift build/Lens.zip > build/Lens.zip.sig
+        run: swift scripts/sign-update.swift build/Lensy.zip > build/Lensy.zip.sig
       - name: Publish
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release create "$GITHUB_REF_NAME" build/Lens.dmg build/Lens.zip build/Lens.zip.sig build/SHA256SUMS.txt \
-            --title "Lens ${GITHUB_REF_NAME#v}" --notes-from-tag
+          gh release create "$GITHUB_REF_NAME" build/Lensy.dmg build/Lensy.zip build/Lensy.zip.sig build/SHA256SUMS.txt \
+            --title "Lensy ${GITHUB_REF_NAME#v}" --notes-from-tag
 
   site:
     needs: release

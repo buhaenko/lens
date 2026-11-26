@@ -1,5 +1,5 @@
 #!/bin/zsh
-# Builds Lens.app (universal), Lens.dmg and Lens.zip into ./build.
+# Builds Lensy.app (universal), Lensy.dmg and Lensy.zip into ./build.
 #
 #   scripts/build.sh 1.2.0
 #
@@ -9,8 +9,8 @@
 set -euo pipefail
 cd "${0:A:h}/.."
 
-NAME=Lens
-BUNDLE_ID=com.serhii.Lens
+NAME=Lensy
+BUNDLE_ID=com.serhii.Lensy
 MIN_MACOS=15.0
 VERSION=${1:-0.0.0-dev}
 BUILD=build
@@ -44,7 +44,7 @@ cat > $APP/Contents/Info.plist <<PLIST
   <key>LSApplicationCategoryType</key><string>public.app-category.utilities</string>
   <key>NSPrincipalClass</key><string>NSApplication</string>
   <key>NSHighResolutionCapable</key><true/>
-  <key>NSHumanReadableCopyright</key><string>© $(date +%Y) Serhii Buhaienko · MIT License</string>
+  <key>NSHumanReadableCopyright</key><string>MIT License · github.com/buhaenko/lensy</string>
 </dict></plist>
 PLIST
 
@@ -60,7 +60,12 @@ codesign --verify --strict $APP
 echo "▸ packaging"
 stage=$(mktemp -d)
 cp -R $APP $stage/ && ln -s /Applications $stage/Applications
-hdiutil create -quiet -volname "$NAME" -srcfolder $stage -fs HFS+ -format UDZO -ov $BUILD/$NAME.dmg
+# hdiutil sometimes fails with "Resource busy" on CI runners — retry a few times
+for attempt in 1 2 3 4 5; do
+  hdiutil create -quiet -volname "$NAME" -srcfolder $stage -fs HFS+ -format UDZO -ov $BUILD/$NAME.dmg && break
+  [[ $attempt == 5 ]] && { echo "✗ hdiutil failed"; exit 1; }
+  echo "  hdiutil failed, retrying ($attempt)…"; sleep $((attempt * 3))
+done
 rm -rf $stage
 ditto -c -k --keepParent $APP $BUILD/$NAME.zip
 if [[ -n "${SIGN_ID:-}" ]]; then

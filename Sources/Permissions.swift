@@ -3,7 +3,7 @@
 import AppKit
 import ApplicationServices
 
-/// Asking first makes macOS list Lens in System Settings, so the user only has to flip a switch.
+/// Asking first makes macOS list Lensy in System Settings, so the user only has to flip a switch.
 enum Permissions {
     enum Pane: String {
         case screenRecording = "Privacy_ScreenCapture"
@@ -13,20 +13,20 @@ enum Permissions {
     static var screenRecording: Bool { CGPreflightScreenCaptureAccess() }
     static var accessibility: Bool { AXIsProcessTrusted() }
 
-    /// A real (1×1 px) capture attempt is what makes macOS prompt and list Lens under Screen Recording.
+    /// A real (1×1 px) capture attempt is what makes macOS prompt and list Lensy under Screen Recording.
     static func requestScreen() {
         guard !screenRecording else { return }
         _ = CGRequestScreenCaptureAccess()
         Task { _ = await captureScreen(NSRect(x: 0, y: 0, width: 1, height: 1)) }
     }
 
-    /// Needed for the quick-scan key; this prompt adds Lens to the Accessibility list.
+    /// Needed for the quick-scan key; this prompt adds Lensy to the Accessibility list.
     static func requestAccessibility() {
         guard !accessibility else { return }
         _ = AXIsProcessTrustedWithOptions([kAXTrustedCheckOptionPrompt.takeUnretainedValue() as String: true] as CFDictionary)
     }
 
-    /// Ask (so Lens appears in the list), then open that page of System Settings.
+    /// Ask (so Lensy appears in the list), then open that page of System Settings.
     @MainActor static func guide(to pane: Pane) {
         pane == .screenRecording ? requestScreen() : requestAccessibility()
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {

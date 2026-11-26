@@ -3,26 +3,26 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Lens — read & translate any text on your Mac screen</title>
-<meta name="description" content="Lens is a free, open-source Mac menu bar app: select any text on screen — a video, an image, a PDF, a game — and read it translated. Recognition and translation run on-device.">
-<link rel="canonical" href="https://buhaenko.github.io/lens/">
+<title>Lensy — read & translate any text on your Mac screen</title>
+<meta name="description" content="Lensy is a free, open-source Mac menu bar app: select any text on screen — a video, an image, a PDF, a game — and read it translated. Recognition and translation run on-device.">
+<link rel="canonical" href="https://buhaenko.github.io/lensy/">
 <meta name="theme-color" content="#08111a">
 <meta name="color-scheme" content="dark">
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
 <link rel="icon" type="image/png" sizes="64x64" href="favicon.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <meta property="og:type" content="website">
-<meta property="og:site_name" content="Lens">
-<meta property="og:title" content="Lens — read & translate any text on your Mac screen">
-<meta property="og:description" content="Lens is a free, open-source Mac menu bar app: select any text on screen — a video, an image, a PDF, a game — and read it translated. Recognition and translation run on-device.">
-<meta property="og:url" content="https://buhaenko.github.io/lens/">
-<meta property="og:image" content="https://buhaenko.github.io/lens/og.png">
+<meta property="og:site_name" content="Lensy">
+<meta property="og:title" content="Lensy — read & translate any text on your Mac screen">
+<meta property="og:description" content="Lensy is a free, open-source Mac menu bar app: select any text on screen — a video, an image, a PDF, a game — and read it translated. Recognition and translation run on-device.">
+<meta property="og:url" content="https://buhaenko.github.io/lensy/">
+<meta property="og:image" content="https://buhaenko.github.io/lensy/og.png">
 <meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Lens — read & translate any text on your Mac screen">
-<meta name="twitter:description" content="Lens is a free, open-source Mac menu bar app: select any text on screen — a video, an image, a PDF, a game — and read it translated. Recognition and translation run on-device.">
-<meta name="twitter:image" content="https://buhaenko.github.io/lens/og.png">
-<script type="application/ld+json">{"@context": "https://schema.org", "@type": "SoftwareApplication", "name": "Lens", "operatingSystem": "macOS 15+", "applicationCategory": "UtilitiesApplication", "description": "Lens is a free, open-source Mac menu bar app: select any text on screen — a video, an image, a PDF, a game — and read it translated. Recognition and translation run on-device.", "url": "https://buhaenko.github.io/lens/", "downloadUrl": "https://github.com/buhaenko/lens/releases/latest/download/Lens.dmg", "softwareVersion": "1.0.0", "fileSize": "1.3 MB", "license": "https://opensource.org/licenses/MIT", "isAccessibleForFree": true, "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}, "author": {"@type": "Person", "name": "Serhii Buhaienko", "url": "https://github.com/buhaenko"}}</script>
+<meta name="twitter:title" content="Lensy — read & translate any text on your Mac screen">
+<meta name="twitter:description" content="Lensy is a free, open-source Mac menu bar app: select any text on screen — a video, an image, a PDF, a game — and read it translated. Recognition and translation run on-device.">
+<meta name="twitter:image" content="https://buhaenko.github.io/lensy/og.png">
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "SoftwareApplication", "name": "Lensy", "operatingSystem": "macOS 15+", "applicationCategory": "UtilitiesApplication", "description": "Lensy is a free, open-source Mac menu bar app: select any text on screen — a video, an image, a PDF, a game — and read it translated. Recognition and translation run on-device.", "url": "https://buhaenko.github.io/lensy/", "downloadUrl": "https://github.com/buhaenko/lensy/releases/latest/download/Lensy.dmg", "softwareVersion": "1.0.0", "fileSize": "1.3 MB", "license": "https://opensource.org/licenses/MIT", "isAccessibleForFree": true, "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD"}}</script>
 <style>
   :root { --bg: #08111a; --ink: #eef5fa; --muted: #98a8b6; --faint: #7d8d9b; --line: rgba(255,255,255,.08);
           --blue: #2b8cff; --teal: #19c2b0; }
@@ -203,12 +203,19 @@
   .kbd { font: 600 13px/1 ui-rounded, -apple-system, sans-serif; padding: 3px 7px; border-radius: 6px; background: rgba(255,255,255,.08);
          border: 1px solid rgba(255,255,255,.1); border-bottom-width: 2px; color: var(--ink); white-space: nowrap; }
 
-  footer { flex: none; display: flex; justify-content: space-between; flex-wrap: wrap; gap: 10px; padding: 16px 40px;
+  footer { flex: none; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; padding: 16px 40px;
            border-top: 1px solid var(--line); color: var(--faint); font-size: 13.5px; }
   footer a, footer button { color: var(--muted); text-decoration: none; }
   footer a:hover, footer button:hover { color: var(--ink); }
-  footer nav { display: flex; gap: 18px; flex-wrap: wrap; }
+  footer nav { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }
   footer button { border: 0; background: none; font: inherit; cursor: pointer; }
+  .gh { display: inline-flex; align-items: center; gap: 8px; padding: 7px 13px 7px 11px; border-radius: 99px; text-decoration: none;
+        font: 600 13px/1 -apple-system, sans-serif; color: var(--ink); background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.12);
+        transition: background .15s, border-color .15s; }
+  .gh:hover { background: rgba(255,255,255,.12); border-color: rgba(255,255,255,.22); color: var(--ink); }
+  .brand .gh { margin-left: auto; }
+  footer .gh { color: var(--ink); }
+  @media (max-width: 480px) { .brand .gh span { display: none; } .brand .gh { padding: 8px; } }
 
   /* “Is it safe?” */
   dialog { margin: auto; width: min(560px, calc(100% - 32px)); max-height: min(640px, calc(100svh - 48px)); overflow: auto; padding: 28px 28px 20px;
@@ -233,7 +240,7 @@
   @media (max-height: 760px) { main { padding-block: 20px; } h1 { margin-top: 18px; } .cmd, .stats { margin-top: 22px; } .lead { font-size: 16.5px; } }
   @media (max-width: 1000px) {
     main { grid-template-columns: minmax(0, 1fr); gap: 40px; padding: 40px 20px; text-align: center; }
-    .brand { justify-content: center; } .lead { margin-inline: auto; } .stats { justify-content: center; } .screen { height: 380px; }
+    .brand { justify-content: center; } .brand .gh { margin-left: 6px; } .lead { margin-inline: auto; } .stats { justify-content: center; } .screen { height: 380px; }
     footer { justify-content: center; text-align: center; padding: 16px 20px; }
     .menubar .left span:not(:first-child) { display: none; }
   }
@@ -242,8 +249,8 @@
 </head>
 <body>
 <div class="menubar" aria-hidden="true">
-  <div class="left"><img src="icon.png" alt=""><span>Lens</span><span>File</span><span>Edit</span><span>View</span></div>
-  <div class="mbicon" id="mbicon" title="Lens in the menu bar">
+  <div class="left"><img src="icon.png" alt=""><span>Lensy</span><span>File</span><span>Edit</span><span>View</span></div>
+  <div class="mbicon" id="mbicon" title="Lensy in the menu bar">
     <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
       <path d="M0.6 10.8 L5.6 8.4" stroke-width="1.3"/>
       <path d="M8.2 2.8 L3.6 13.2 H12.8 Z" fill="currentColor" fill-opacity=".22" stroke-width="1.4"/>
@@ -255,13 +262,13 @@
 
 <main>
   <div class="intro">
-    <div class="brand"><img src="icon.png" alt="Lens app icon" width="52" height="52">Lens</div>
+    <div class="brand"><img src="icon.png" alt="Lensy app icon" width="52" height="52">Lensy<a class="gh" href="https://github.com/buhaenko/lensy"><svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg><span>Open source on GitHub</span></a></div>
     <h1>Point at any text.<br><span>Read it in yours.</span></h1>
-    <p class="lead">Tap a key, drag over a video, a screenshot, a PDF or a game — Lens reads the text and translates it right there. On-device.</p>
+    <p class="lead">Tap a key, drag over a video, a screenshot, a PDF or a game — Lensy reads the text and translates it right there. On-device.</p>
 
-    <div class="cmd"><code id="cmd">curl -fsSL https://buhaenko.github.io/lens/install.sh | bash</code><button id="copy" aria-label="Copy install command">Copy</button><span class="sr" id="copied" aria-live="polite"></span></div>
-    <div class="meta">Paste into Terminal to install · or <a href="https://github.com/buhaenko/lens/releases/latest/download/Lens.dmg">download the DMG</a> · macOS 15+</div>
-    <div class="notmac" id="notmac">Lens is a Mac app — open this page on your Mac to install it.</div>
+    <div class="cmd"><code id="cmd">curl -fsSL https://buhaenko.github.io/lensy/install.sh | bash</code><button id="copy" aria-label="Copy install command">Copy</button><span class="sr" id="copied" aria-live="polite"></span></div>
+    <div class="meta">Paste into Terminal to install · or <a href="https://github.com/buhaenko/lensy/releases/latest/download/Lensy.dmg">download the DMG</a> · macOS 15+</div>
+    <div class="notmac" id="notmac">Lensy is a Mac app — open this page on your Mac to install it.</div>
 
     <div class="stats">
       <div class="stat hero"><b data-v="downloads">0</b><span>downloads</span></div>
@@ -353,37 +360,37 @@
 </main>
 
 <footer>
-  <span>Made by <a href="https://github.com/buhaenko">Serhii Buhaienko</a></span>
-  <nav aria-label="Links"><button id="safeBtn">Is it safe?</button><a href="https://github.com/buhaenko/lens">GitHub</a><a href="https://github.com/buhaenko/lens/issues">Report a bug</a><a href="../lingo/">Lingo</a></nav>
+  <a class="gh" href="https://github.com/buhaenko/lensy"><svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg><span>github.com/buhaenko/lensy</span></a>
+  <nav aria-label="Links"><button id="safeBtn">Is it safe?</button><a href="https://github.com/buhaenko/lensy/issues">Report a bug</a><a href="../lingo/">Lingo</a></nav>
 </footer>
 
 <dialog id="safe" aria-labelledby="safeTitle">
   <button class="x" id="safeClose" aria-label="Close">✕</button>
   <h2 id="safeTitle">Is it safe?</h2>
     <details open><summary>It’s open source</summary>
-    <p>Every line of Lens is on <a href="https://github.com/buhaenko/lens">GitHub</a>. Each release is built and tested by GitHub Actions straight from that code,
+    <p>Every line of Lensy is on <a href="https://github.com/buhaenko/lensy">GitHub</a>. Each release is built and tested by GitHub Actions straight from that code,
        so the app you download is the code you can read.</p></details>
   <details><summary>What it can access — and why</summary>
-    <ul><li><strong>Screen Recording</strong> — to read the text inside the area you select — only when you scan.</li><li><strong>Accessibility</strong> — to notice the quick-scan key (a modifier you tap on its own). Lens never reads what you type.</li></ul>
-    <p>macOS asks you first; Lens is already in the list, you just flip the switch. You can turn it off any time in System Settings → Privacy &amp; Security.</p></details>
-  <details><summary>Does it send my data anywhere?</summary><p>Lens never sends your text or screen anywhere. Network access: macOS downloading a language pack from Apple the first time you translate into a new language, and a daily check on GitHub for a new version of Lens (you can turn it off in Settings). No analytics, no accounts, no tracking.</p></details>
+    <ul><li><strong>Screen Recording</strong> — to read the text inside the area you select — only when you scan.</li><li><strong>Accessibility</strong> — to notice the quick-scan key (a modifier you tap on its own). Lensy never reads what you type.</li></ul>
+    <p>macOS asks you first; Lensy is already in the list, you just flip the switch. You can turn it off any time in System Settings → Privacy &amp; Security.</p></details>
+  <details><summary>Does it send my data anywhere?</summary><p>Lensy never sends your text or screen anywhere. Network access: macOS downloading a language pack from Apple the first time you translate into a new language, and a daily check on GitHub for a new version of Lensy (you can turn it off in Settings). No analytics, no accounts, no tracking.</p></details>
   <details><summary>Why doesn’t macOS say “verified developer”?</summary>
-    <p>Apple charges $99 a year for that badge. Lens is a free side project, so it’s signed locally instead.
+    <p>Apple charges $99 a year for that badge. Lensy is a free side project, so it’s signed locally instead.
        The Terminal command installs it without any warning. With the DMG, macOS asks once — click
        <strong>Open Anyway</strong> in System Settings → Privacy &amp; Security.</p></details>
   <details><summary>How do I check the download?</summary>
     <p>Compare the SHA-256 of the file with the one published on the release page:</p>
-    <p><code>shasum -a 256 ~/Downloads/Lens.dmg</code><br><code data-v="sha"><a href="https://github.com/buhaenko/lens/releases/latest">see the release page</a></code></p></details>
+    <p><code>shasum -a 256 ~/Downloads/Lensy.dmg</code><br><code data-v="sha"><a href="https://github.com/buhaenko/lensy/releases/latest">see the release page</a></code></p></details>
   <details><summary>How do I uninstall it?</summary>
-    <p>Quit Lens from its menu and drag it from Applications to the Trash — or run<br>
-       <code>curl -fsSL https://buhaenko.github.io/lens/install.sh | bash -s -- uninstall</code></p></details>
+    <p>Quit Lensy from its menu and drag it from Applications to the Trash — or run<br>
+       <code>curl -fsSL https://buhaenko.github.io/lensy/install.sh | bash -s -- uninstall</code></p></details>
   <details><summary>Anything else I should know?</summary>
     <p>The first translation into a new language downloads a language pack from Apple once; after that it works offline.
        Every scan is kept in a searchable history in the menu bar — pin the ones worth keeping.</p></details>
 </dialog>
 
 <script>
-  // ───── interactive Lens demo ─────
+  // ───── interactive Lensy demo ─────
   const DATA = {
     video: { src: "de", blocks: {
       cc:        { de: "Das hier ist der beste Döner in ganz Berlin.", en: "This is the best döner in all of Berlin.", fr: "C’est le meilleur döner de tout Berlin.",
@@ -490,7 +497,7 @@
     openPop(r);
   }
 
-  // first visit: Lens shows itself once — scan, drag over the caption, read it
+  // first visit: Lensy shows itself once — scan, drag over the caption, read it
   let auto = true;
   const stopAuto = () => auto = false;
   ["pointerdown", "keydown"].forEach(t => addEventListener(t, stopAuto, { capture: true, once: true }));
@@ -572,7 +579,7 @@
 
   // install command: GitHub Pages copy of install.sh; on a local preview it points at this server instead
   const local = /^(localhost|127\.0\.0\.1)$/.test(location.hostname);
-  const base = local ? location.href.replace(/[#?].*$/, '').replace(/index\.html$/, '').replace(/\/?$/, '/') : 'https://buhaenko.github.io/lens/';
+  const base = local ? location.href.replace(/[#?].*$/, '').replace(/index\.html$/, '').replace(/\/?$/, '/') : 'https://buhaenko.github.io/lensy/';
   const cmd = local ? `curl -fsSL ${base}install.sh | INSTALL_BASE_URL=${base.slice(0, -1)} bash` : `curl -fsSL ${base}install.sh | bash`;
   document.getElementById('cmd').textContent = cmd;
   document.getElementById('uninst') && (document.getElementById('uninst').textContent = cmd.replace(/bash$/, 'bash -s -- uninstall'));

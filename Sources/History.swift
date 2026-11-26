@@ -1,4 +1,4 @@
-// Persistent history of scans (~/Library/Application Support/Lens/history.json), with pinning and search.
+// Persistent history of scans (~/Library/Application Support/Lensy/history.json), with pinning and search.
 
 import Foundation
 import Combine
@@ -43,7 +43,7 @@ struct Scan: Codable, Identifiable, Equatable {
     static var shared = History()
 
     nonisolated static let defaultURL: URL = {
-        let folder = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0].appendingPathComponent("Lens")
+        let folder = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0].appendingPathComponent("Lensy")
         try? FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
         return folder.appendingPathComponent("history.json")
     }()

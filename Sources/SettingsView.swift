@@ -33,7 +33,7 @@ struct SettingsView: View {
         VStack(alignment: .leading, spacing: 16) {
             HStack(spacing: 10) {
                 Image(nsImage: NSApp.applicationIconImage).resizable().frame(width: 28, height: 28)
-                Text("Lens").font(.system(size: 15, weight: .semibold))
+                Text("Lensy").font(.system(size: 15, weight: .semibold))
                 Spacer()
                 Text(shortcutHint()).font(.system(size: 11.5)).foregroundStyle(.tertiary)
             }
@@ -64,6 +64,12 @@ struct SettingsView: View {
                 }
                 .menuStyle(.button).buttonStyle(.plain).menuIndicator(.hidden)
                 .frame(maxWidth: .infinity, alignment: .leading).padding(.horizontal, 12).frame(height: 34)
+                Divider()
+                Button { NotificationCenter.default.post(name: IntroView.open, object: nil) } label: {
+                    Label("Download for offline use…", systemImage: "arrow.down.circle").font(.system(size: 12.5)).foregroundStyle(.secondary)
+                        .frame(maxWidth: .infinity, alignment: .leading).contentShape(Rectangle())
+                }
+                .buttonStyle(.plain).padding(.horizontal, 12).frame(height: 34)
             }
 
             group("Shortcuts") {

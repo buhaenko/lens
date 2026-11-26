@@ -17,7 +17,7 @@ struct HistoryView: View {
     var body: some View {
         VStack(spacing: 0) {
             HStack(alignment: .firstTextBaseline) {
-                Text("Lens").font(.system(size: 13, weight: .semibold))
+                Text("Lensy").font(.system(size: 13, weight: .semibold))
                 Spacer()
                 Button(action: scan) {
                     Label("Scan", systemImage: "text.viewfinder").font(.system(size: 11.5, weight: .medium))

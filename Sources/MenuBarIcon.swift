@@ -29,7 +29,7 @@ enum MenuBarIcon: String, CaseIterable, Identifiable {
     }
 
     private func symbol(_ name: String) -> NSImage {
-        NSImage(systemSymbolName: name, accessibilityDescription: "Lens")?
+        NSImage(systemSymbolName: name, accessibilityDescription: "Lensy")?
             .withSymbolConfiguration(.init(pointSize: 14, weight: .medium)) ?? prismGlyph()
     }
 }
