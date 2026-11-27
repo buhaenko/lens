@@ -198,6 +198,19 @@ struct IntroView: View {
                     .font(.system(size: 12.5)).foregroundStyle(.secondary).multilineTextAlignment(.center)
             }
             .frame(maxWidth: .infinity)
+            .overlay(alignment: .topTrailing) {
+                // Lensy's own language — English until the person picks theirs
+                Menu {
+                    ForEach(AppLanguage.allCases) { language in
+                        Button(language.name) { AppLanguage.switchTo(language, reopening: "intro") }
+                    }
+                } label: {
+                    Label(AppLanguage.current.name, systemImage: "globe")
+                }
+                .menuStyle(.borderlessButton).fixedSize()
+                .font(.system(size: 11.5))
+                .help(String(localized: "Lensy restarts to switch the language."))
+            }
             .padding(.top, 4)
 
             VStack(spacing: 0) {
@@ -239,7 +252,7 @@ struct IntroView: View {
                 Text(footnote).font(.system(size: 11)).foregroundStyle(.tertiary)
                 Spacer()
                 if !downloads.needed.isEmpty || downloads.isDownloading {
-                    Button(downloads.isDownloading ? "Downloading…" : "Download \(downloads.needed.count == 1 ? "1 language" : "\(downloads.needed.count) languages")") {
+                    Button(downloadTitle) {
                         downloads.downloadAll()
                     }
                     .disabled(downloads.isDownloading)
@@ -266,9 +279,15 @@ struct IntroView: View {
         .onReceive(tick) { _ in hasScreenRecording = Permissions.screenRecording }
     }
 
+    private var downloadTitle: String {
+        if downloads.isDownloading { return String(localized: "Downloading…") }
+        let count = downloads.needed.count
+        return count == 1 ? String(localized: "Download 1 language") : String(localized: "Download \(count) languages")
+    }
+
     private var footnote: String {
-        if downloads.isDownloading { return "Keep this window open until it’s done" }
-        return downloads.needed.isEmpty ? "Tab in the popup switches between these" : "Downloaded from Apple, only once"
+        if downloads.isDownloading { return String(localized: "Keep this window open until it’s done") }
+        return downloads.needed.isEmpty ? String(localized: "Tab in the popup switches between these") : String(localized: "Downloaded from Apple, only once")
     }
 }
 

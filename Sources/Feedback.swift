@@ -54,16 +54,19 @@ enum Feedback {
         do {
             (data, response) = try await session.data(for: request(email: email, message: message, endpoint: endpoint))
         } catch {
-            throw Failure(message: "Couldn’t reach the server — check your connection and try again.")
+            throw Failure(message: String(localized: "Couldn’t reach the server — check your connection and try again."))
         }
         let status = (response as? HTTPURLResponse)?.statusCode ?? 0
         if (200..<300).contains(status) { return }
         let reason = (try? JSONSerialization.jsonObject(with: data) as? [String: Any])?["error"] as? String
-        throw Failure(message: reason ?? "Couldn’t send right now — please try again later.")
+        throw Failure(message: reason ?? String(localized: "Couldn’t send right now — please try again later."))
     }
 }
 
 struct FeedbackView: View {
+    /// Opens the window; the notification's object, if a String, is put in the message (a crash report).
+    static let open = Notification.Name("lensy.feedback.open")
+    var prefill = ""
     var close: () -> Void = {}
     var send: (String, String) async throws -> Void = { try await Feedback.send(email: $0, message: $1) }
     @AppStorage("feedbackEmail") private var email = ""
@@ -125,7 +128,10 @@ struct FeedbackView: View {
             }
             .controlSize(.large)
         }
-        .onAppear { focus = email.isEmpty ? .email : .message }
+        .onAppear {
+            if message.isEmpty && !prefill.isEmpty { message = prefill }
+            focus = email.isEmpty ? .email : .message
+        }
     }
 
     private var thanks: some View {

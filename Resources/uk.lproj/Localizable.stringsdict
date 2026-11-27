@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>%lld characters</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@chars@</string>
+		<key>chars</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>few</key>
+			<string>%lld символи</string>
+			<key>many</key>
+			<string>%lld символів</string>
+			<key>one</key>
+			<string>%lld символ</string>
+			<key>other</key>
+			<string>%lld символу</string>
+		</dict>
+	</dict>
+	<key>%lld pinned</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@pinned@</string>
+		<key>pinned</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>few</key>
+			<string>%lld закріплені</string>
+			<key>many</key>
+			<string>%lld закріплених</string>
+			<key>one</key>
+			<string>%lld закріплений</string>
+			<key>other</key>
+			<string>%lld закріпленого</string>
+		</dict>
+	</dict>
+	<key>%lld scans</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@scans@</string>
+		<key>scans</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>few</key>
+			<string>%lld скани</string>
+			<key>many</key>
+			<string>%lld сканів</string>
+			<key>one</key>
+			<string>%lld скан</string>
+			<key>other</key>
+			<string>%lld скана</string>
+		</dict>
+	</dict>
+	<key>Clear %lld scans?</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@scans@</string>
+		<key>scans</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>few</key>
+			<string>Очистити %lld скани?</string>
+			<key>many</key>
+			<string>Очистити %lld сканів?</string>
+			<key>one</key>
+			<string>Очистити %lld скан?</string>
+			<key>other</key>
+			<string>Очистити %lld скана?</string>
+		</dict>
+	</dict>
+	<key>Cleared %lld scans</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@scans@</string>
+		<key>scans</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>few</key>
+			<string>Очищено %lld скани</string>
+			<key>many</key>
+			<string>Очищено %lld сканів</string>
+			<key>one</key>
+			<string>Очищено %lld скан</string>
+			<key>other</key>
+			<string>Очищено %lld скана</string>
+		</dict>
+	</dict>
+	<key>Download %lld languages</key>
+	<dict>
+		<key>NSStringLocalizedFormatKey</key>
+		<string>%#@langs@</string>
+		<key>langs</key>
+		<dict>
+			<key>NSStringFormatSpecTypeKey</key>
+			<string>NSStringPluralRuleType</string>
+			<key>NSStringFormatValueTypeKey</key>
+			<string>lld</string>
+			<key>few</key>
+			<string>Завантажити %lld мови</string>
+			<key>many</key>
+			<string>Завантажити %lld мов</string>
+			<key>one</key>
+			<string>Завантажити %lld мову</string>
+			<key>other</key>
+			<string>Завантажити %lld мови</string>
+		</dict>
+	</dict>
+</dict>
+</plist>

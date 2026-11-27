@@ -9,7 +9,7 @@ import NaturalLanguage
 func recognitionHints() -> [String] {
     let supported = (try? VNRecognizeTextRequest().supportedRecognitionLanguages()) ?? []
     var wanted: [String] = []
-    for id in langs.map(\.id) + Locale.preferredLanguages {
+    for id in langs.map(\.id) + systemLanguages {
         let base = Locale.Language(identifier: id).languageCode?.identifier ?? id
         if let match = supported.first(where: { $0 == id || $0.hasPrefix(base + "-") || $0 == base }), !wanted.contains(match) {
             wanted.append(match)
@@ -81,7 +81,7 @@ func detectLanguage(_ text: String) -> String? {
     if let (lang, p) = r.languageHypotheses(withMaximum: 1).first, p >= 0.6 { return lang.rawValue }
     // ambiguous (very short text, shared words…) → let the user's languages break the tie
     var hints: [NLLanguage: Double] = [:]
-    for id in langs.map(\.id) + Locale.preferredLanguages.prefix(3) {
+    for id in langs.map(\.id) + systemLanguages.prefix(3) {
         let base = Locale.Language(identifier: id).languageCode?.identifier ?? id
         hints[NLLanguage(base)] = 0.6
     }

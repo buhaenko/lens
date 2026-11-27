@@ -11,9 +11,9 @@ enum MenuBarIcon: String, CaseIterable, Identifiable {
 
     var title: String {
         switch self {
-        case .translate: "Translate"
-        case .scanText: "Scan text"
-        case .prism: "Prism"
+        case .translate: String(localized: "Translate")
+        case .scanText: String(localized: "Scan text")
+        case .prism: String(localized: "Prism")
         }
     }
 

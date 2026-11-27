@@ -25,12 +25,15 @@ done
 lipo -create $BUILD/$NAME-arm64 $BUILD/$NAME-x86_64 -output $APP/Contents/MacOS/$NAME
 rm $BUILD/$NAME-arm64 $BUILD/$NAME-x86_64
 cp Resources/AppIcon.icns $APP/Contents/Resources/
+cp -R Resources/*.lproj $APP/Contents/Resources/      # en, es, de, uk, pl UI strings
 
 cat > $APP/Contents/Info.plist <<PLIST
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0"><dict>
   <key>CFBundleIdentifier</key><string>$BUNDLE_ID</string>
+  <key>CFBundleDevelopmentRegion</key><string>en</string>
+  <key>CFBundleLocalizations</key><array><string>en</string><string>es</string><string>de</string><string>uk</string><string>pl</string></array>
   <key>CFBundleName</key><string>$NAME</string>
   <key>CFBundleDisplayName</key><string>$NAME</string>
   <key>CFBundleExecutable</key><string>$NAME</string>

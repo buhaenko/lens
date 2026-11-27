@@ -39,10 +39,10 @@ import CryptoKit
         case download, badSignature, badArchive, notWritable
         var errorDescription: String? {
             switch self {
-            case .download: "Couldn’t download the update. Check your connection and try again."
-            case .badSignature: "The downloaded update isn’t signed by Lensy, so it wasn’t installed."
-            case .badArchive: "The downloaded update looks broken, so it wasn’t installed."
-            case .notWritable: "Lensy can’t replace itself in this folder. Download the new version and drag it to Applications."
+            case .download: String(localized: "Couldn’t download the update. Check your connection and try again.")
+            case .badSignature: String(localized: "The downloaded update isn’t signed by Lensy, so it wasn’t installed.")
+            case .badArchive: String(localized: "The downloaded update looks broken, so it wasn’t installed.")
+            case .notWritable: String(localized: "Lensy can’t replace itself in this folder. Download the new version and drag it to Applications.")
             }
         }
     }
@@ -92,13 +92,14 @@ import CryptoKit
         Task {
             if case .available = state, let found { await install(found, interactive: true); return }
             if let release = await refresh() { await install(release, interactive: true); return }
-            if state == .failed { tell("Couldn’t check for updates", "Check your connection and try again.") }
+            if state == .failed { tell(String(localized: "Couldn’t check for updates"), String(localized: "Check your connection and try again.")) }
         }
     }
 
     /// interactive: asks first and explains failures. Automatic: silent, waits until Lensy is idle.
     func install(_ release: Release, interactive: Bool) async {
-        if interactive && !ask("Lensy \(release.version) is available", "You have \(Self.currentVersion). Lensy restarts in a second — your history and settings stay.", ok: "Install & Restart") { return }
+        let current = Self.currentVersion
+        if interactive && !ask(String(localized: "Lensy \(release.version) is available"), String(localized: "You have \(current). Lensy restarts in a second — your history and settings stay."), ok: String(localized: "Install & Restart")) { return }
         state = .installing(release.version)
         do {
             let app = Bundle.main.bundleURL
@@ -113,9 +114,9 @@ import CryptoKit
             state = .available(release.version)
             guard interactive else { return }
             if case Failure.notWritable = error {
-                if ask("Update Lensy manually", error.localizedDescription, ok: "Download") { NSWorkspace.shared.open(Self.downloadPage) }
+                if ask(String(localized: "Update Lensy manually"), error.localizedDescription, ok: String(localized: "Download")) { NSWorkspace.shared.open(Self.downloadPage) }
             } else {
-                tell("Lensy couldn’t update", (error as? Failure)?.errorDescription ?? Failure.download.errorDescription!)
+                tell(String(localized: "Lensy couldn’t update"), (error as? Failure)?.errorDescription ?? Failure.download.errorDescription!)
             }
         }
     }
@@ -128,14 +129,14 @@ import CryptoKit
 
     /// What the update item in the menu says for each state.
     nonisolated static func menuLine(_ state: State, version: String, enabled: Bool = true) -> MenuLine {
-        guard enabled else { return MenuLine(title: "Development Build", subtitle: "Updates are off", symbol: "hammer", enabled: false) }
+        guard enabled else { return MenuLine(title: String(localized: "Development Build"), subtitle: String(localized: "Updates are off"), symbol: "hammer", enabled: false) }
         switch state {
-        case .unknown: return MenuLine(title: "Check for Updates…", subtitle: "Lensy \(version)", symbol: "arrow.triangle.2.circlepath", enabled: true)
-        case .checking: return MenuLine(title: "Checking for Updates…", subtitle: "Lensy \(version)", symbol: "arrow.triangle.2.circlepath", enabled: false)
-        case .upToDate: return MenuLine(title: "Lensy Is Up to Date", subtitle: "\(version) is the latest version", symbol: "checkmark.circle", enabled: true)
-        case .failed: return MenuLine(title: "Check for Updates…", subtitle: "Couldn’t connect — try again", symbol: "exclamationmark.arrow.triangle.2.circlepath", enabled: true)
-        case .available(let new): return MenuLine(title: "Update to Lensy \(new)…", subtitle: "You have \(version)", symbol: "arrow.down.circle.fill", enabled: true, highlighted: true)
-        case .installing(let new): return MenuLine(title: "Installing Lensy \(new)…", subtitle: "Lensy restarts when it’s done", symbol: "arrow.down.circle", enabled: false)
+        case .unknown: return MenuLine(title: String(localized: "Check for Updates…"), subtitle: "Lensy \(version)", symbol: "arrow.triangle.2.circlepath", enabled: true)
+        case .checking: return MenuLine(title: String(localized: "Checking for Updates…"), subtitle: "Lensy \(version)", symbol: "arrow.triangle.2.circlepath", enabled: false)
+        case .upToDate: return MenuLine(title: String(localized: "Lensy Is Up to Date"), subtitle: String(localized: "\(version) is the latest version"), symbol: "checkmark.circle", enabled: true)
+        case .failed: return MenuLine(title: String(localized: "Check for Updates…"), subtitle: String(localized: "Couldn’t connect — try again"), symbol: "exclamationmark.arrow.triangle.2.circlepath", enabled: true)
+        case .available(let new): return MenuLine(title: String(localized: "Update to Lensy \(new)…"), subtitle: String(localized: "You have \(version)"), symbol: "arrow.down.circle.fill", enabled: true, highlighted: true)
+        case .installing(let new): return MenuLine(title: String(localized: "Installing Lensy \(new)…"), subtitle: String(localized: "Lensy restarts when it’s done"), symbol: "arrow.down.circle", enabled: false)
         }
     }
 
@@ -224,9 +225,9 @@ import CryptoKit
 
     // MARK: - Alerts
 
-    private func tell(_ title: String, _ text: String) { _ = ask(title, text, ok: "OK", cancel: nil) }
+    private func tell(_ title: String, _ text: String) { _ = ask(title, text, ok: String(localized: "OK"), cancel: nil) }
 
-    private func ask(_ title: String, _ text: String, ok: String, cancel: String? = "Later") -> Bool {
+    private func ask(_ title: String, _ text: String, ok: String, cancel: String? = String(localized: "Later")) -> Bool {
         let alert = NSAlert()
         alert.messageText = title
         alert.informativeText = text

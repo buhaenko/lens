@@ -22,6 +22,10 @@ import Carbon.HIToolbox
     var captureStartedAt = Date.distantPast
     var previousApp: NSRunningApplication?
     var tuckedWindows: [NSWindow] = []
+    let historyList = HistoryList()
+    var historyKeyMonitor: Any?
+    var popupFrame: NSRect?
+    var reopenedAt: Date?
     var overlayWatchdog: Timer?
     var overlayKeyMonitor: Any?
     var overlayObservers: [NSObjectProtocol] = []
@@ -61,7 +65,15 @@ import Carbon.HIToolbox
         NotificationCenter.default.addObserver(forName: IntroView.open, object: nil, queue: .main) { [weak self] _ in
             MainActor.assumeIsolated { self?.openIntro() }
         }
-        if !defaults.bool(forKey: "onboarded") {
+        NotificationCenter.default.addObserver(forName: FeedbackView.open, object: nil, queue: .main) { [weak self] note in
+            let message = note.object as? String ?? ""
+            MainActor.assumeIsolated { self?.showFeedback(message: message) }
+        }
+        CrashReports.shared.check()
+        if let window = AppLanguage.takeReopen() {         // just restarted to switch the interface language
+            reopenedAt = Date()
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { window == "intro" ? self.openIntro() : self.openSettings() }
+        } else if !defaults.bool(forKey: "onboarded") {
             defaults.set(true, forKey: "onboarded")
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) { self.openIntro() }      // languages + permission, first run only
         } else if !CGPreflightScreenCaptureAccess() {
@@ -112,6 +124,8 @@ import Carbon.HIToolbox
         center.addObserver(forName: .init(id + ".open"), object: nil, queue: .main) { [weak self] _ in
             MainActor.assumeIsolated {
                 if Self.e2e { NSLog("Lensy: asked to open"); return }
+                // a second launch racing the language-switch restart (launchd keep-alive) — the right window is already coming
+                if let reopened = self?.reopenedAt, Date().timeIntervalSince(reopened) < 5 { return }
                 self?.openSettings()
             }
         }
@@ -131,11 +145,18 @@ import Carbon.HIToolbox
 
         popover.behavior = .transient
         popover.animates = true
-        let history = NSHostingController(rootView: HistoryView(
-            open: { [weak self] scan in self?.reopen(scan) },
+        historyList.open = { [weak self] scan in self?.reopen(scan) }
+        let history = NSHostingController(rootView: HistoryView(list: historyList,
             scan: { [weak self] in self?.popover.performClose(nil); self?.capture() }))
         history.sizingOptions = [.preferredContentSize]
         popover.contentViewController = history
+        NotificationCenter.default.addObserver(forName: NSPopover.didCloseNotification, object: popover, queue: .main) { [weak self] _ in
+            MainActor.assumeIsolated {
+                guard let self, let monitor = self.historyKeyMonitor else { return }
+                NSEvent.removeMonitor(monitor)
+                self.historyKeyMonitor = nil
+            }
+        }
     }
 
     /// Left click: history popover. Right click: a small menu.
@@ -151,6 +172,20 @@ import Carbon.HIToolbox
         }
         popover.show(relativeTo: button.bounds, of: button, preferredEdge: .minY)
         popover.contentViewController?.view.window?.makeKey()
+        installHistoryKeys()
+    }
+
+    /// ↑ ↓ ↩ ⌘⌫ ⌘C ⌘P ⌘Z in the history — seen before the search field, so the arrows walk the list.
+    private func installHistoryKeys() {
+        if let monitor = historyKeyMonitor { NSEvent.removeMonitor(monitor) }
+        historyKeyMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { [weak self] event in
+            let code = Int(event.keyCode), mods = event.modifierFlags
+            let handled: Bool = MainActor.assumeIsolated {
+                guard let self, self.popover.isShown, event.window == self.popover.contentViewController?.view.window else { return false }
+                return self.historyList.handleKey(code, modifiers: mods)
+            }
+            return handled ? nil : event
+        }
     }
 
     private func showStatusMenu() {
@@ -165,17 +200,17 @@ import Carbon.HIToolbox
     func makeStatusMenu() -> NSMenu {
         let menu = NSMenu()
         menu.autoenablesItems = false
-        menu.addItem(item("Scan & Translate", "text.viewfinder", #selector(capture)))
-        menu.addItem(item("Clear History", "trash", #selector(clearHistory)))
+        menu.addItem(item(String(localized: "Scan & Translate"), "text.viewfinder", #selector(capture)))
+        menu.addItem(item(String(localized: "Clear History"), "trash", #selector(clearHistory)))
         menu.addItem(.separator())
-        menu.addItem(item("Settings…", "gearshape", #selector(openSettings), key: ","))
-        menu.addItem(item("Send Feedback…", "envelope", #selector(openFeedback)))
+        menu.addItem(item(String(localized: "Settings…"), "gearshape", #selector(openSettings), key: ","))
+        menu.addItem(item(String(localized: "Send Feedback…"), "envelope", #selector(openFeedback)))
         let update = item("", "", #selector(checkForUpdates))
         updateItem = update
         showUpdateState()
         menu.addItem(update)
         menu.addItem(.separator())
-        menu.addItem(item("Quit Lensy", "power", #selector(NSApplication.terminate(_:)), key: "q"))
+        menu.addItem(item(String(localized: "Quit Lensy"), "power", #selector(NSApplication.terminate(_:)), key: "q"))
         return menu
     }
 
@@ -223,13 +258,16 @@ import Carbon.HIToolbox
         settingsWindow?.makeKeyAndOrderFront(nil)
     }
 
-    @objc func openFeedback() {
+    @objc func openFeedback() { showFeedback(message: "") }
+
+    func showFeedback(message: String) {
         popover.performClose(nil)
+        if !message.isEmpty { feedbackWindow?.close(); feedbackWindow = nil }
         if feedbackWindow == nil {
-            let host = NSHostingController(rootView: FeedbackView { [weak self] in self?.closeFeedback() })
+            let host = NSHostingController(rootView: FeedbackView(prefill: message) { [weak self] in self?.closeFeedback() })
             host.sizingOptions = [.preferredContentSize]
             let window = NSWindow(contentViewController: host)
-            window.title = "Send Feedback"
+            window.title = String(localized: "Send Feedback")
             window.titleVisibility = .hidden
             window.styleMask = [.titled, .closable, .fullSizeContentView]
             window.titlebarAppearsTransparent = true
@@ -259,7 +297,7 @@ import Carbon.HIToolbox
             })
             host.sizingOptions = [.preferredContentSize]
             let window = NSWindow(contentViewController: host)
-            window.title = "Welcome to Lensy"
+            window.title = String(localized: "Welcome to Lensy")
             window.titleVisibility = .hidden
             window.styleMask = [.titled, .closable, .fullSizeContentView]
             window.titlebarAppearsTransparent = true

@@ -5,14 +5,17 @@ import SwiftUI
 import Combine
 
 struct HistoryView: View {
-    @ObservedObject var history = History.shared
-    var open: (Scan) -> Void
+    @ObservedObject var list: HistoryList
+    @ObservedObject var history: History
     var scan: () -> Void
-    @State private var query = ""
     @FocusState private var searchFocused: Bool
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
-    private var pinned: [Scan] { history.pinned.filter { $0.matches(query) } }
-    private var recent: [Scan] { history.recent.filter { $0.matches(query) } }
+    init(list: HistoryList, scan: @escaping () -> Void) {
+        self.list = list
+        self.history = list.history
+        self.scan = scan
+    }
 
     var body: some View {
         VStack(spacing: 0) {
@@ -23,11 +26,12 @@ struct HistoryView: View {
                     Label("Scan", systemImage: "text.viewfinder").font(.system(size: 11.5, weight: .medium))
                 }
                 .buttonStyle(.borderless)
-                .help("\(shortcutHint()) · right-click the icon for Settings")
+                .help(String(localized: "\(shortcutHint()) · right-click the icon for Settings"))
             }
             .padding(.horizontal, 16).padding(.top, 14).padding(.bottom, 10)
 
             PermissionBanner()
+            CrashBanner()
 
             if history.items.isEmpty {
                 VStack(spacing: 8) {
@@ -35,53 +39,118 @@ struct HistoryView: View {
                     Text("No scans yet").font(.system(size: 12, weight: .medium)).foregroundStyle(.secondary)
                     Text("\(shortcutHint()), then select text").font(.system(size: 11)).foregroundStyle(.tertiary)
                 }
-                .frame(maxWidth: .infinity).padding(.top, 28).padding(.bottom, 36)
+                .frame(maxWidth: .infinity).padding(.top, 28).padding(.bottom, list.undo == nil ? 36 : 12)
+                .transition(.opacity.combined(with: .scale(scale: reduceMotion ? 1 : 0.95)))
+                if list.undo != nil { footer }
             } else {
                 searchField
-                ScrollView {
-                    LazyVStack(alignment: .leading, spacing: 0) {
-                        if !pinned.isEmpty {
-                            sectionTitle("Pinned", systemImage: "pin.fill")
-                            rows(pinned)
-                            if !recent.isEmpty { sectionTitle("Recent", systemImage: "clock") }
+                ScrollViewReader { proxy in
+                    ScrollView {
+                        // One list for both sections, so pinning slides a row between them and deleting closes the gap smoothly.
+                        VStack(alignment: .leading, spacing: 0) {
+                            ForEach(entries) { entry in
+                                switch entry {
+                                case .header(let title, let icon):
+                                    sectionTitle(title, systemImage: icon).transition(.opacity)
+                                case .scan(let item, let first):
+                                    VStack(spacing: 0) {
+                                        if !first { Divider().opacity(0.5).padding(.horizontal, 8) }
+                                        ScanRow(item: item, selected: list.selected == item.id,
+                                                open: { list.open(item) },
+                                                togglePin: { list.togglePin(item.id) },
+                                                remove: { list.remove(item.id) })
+                                    }
+                                    .id(item.id)
+                                    .transition(rowTransition)
+                                case .noMatch:
+                                    Text("Nothing matches “\(list.query)”")
+                                        .font(.system(size: 12)).foregroundStyle(.tertiary)
+                                        .frame(maxWidth: .infinity).padding(.vertical, 28)
+                                        .transition(.opacity)
+                                }
+                            }
                         }
-                        rows(recent)
-                        if pinned.isEmpty && recent.isEmpty {
-                            Text("Nothing matches “\(query)”")
-                                .font(.system(size: 12)).foregroundStyle(.tertiary)
-                                .frame(maxWidth: .infinity).padding(.vertical, 28)
-                        }
+                        .padding(.horizontal, 8).padding(.bottom, 8)
+                        .animation(Motion.list, value: list.query)
                     }
-                    .padding(.horizontal, 8).padding(.bottom, 8)
+                    .scrollIndicators(.never)
+                    .frame(maxHeight: 480)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .onChange(of: list.selected) { _, id in
+                        guard let id else { return }
+                        withAnimation(Motion.quick) { proxy.scrollTo(id) }
+                    }
                 }
-                .scrollIndicators(.never)
-                .frame(maxHeight: 480)
-                .fixedSize(horizontal: false, vertical: true)
-
-                Divider().opacity(0.5)
-                HStack {
-                    Text(summary).font(.system(size: 10)).foregroundStyle(.tertiary)
-                    Spacer()
-                    Button(history.pinned.isEmpty ? "Clear" : "Clear unpinned") { withAnimation { history.clear() } }
-                        .buttonStyle(.borderless).font(.system(size: 10, weight: .medium)).foregroundStyle(.secondary)
-                        .disabled(history.recent.isEmpty)
-                }
-                .padding(.horizontal, 16).padding(.top, 10).padding(.bottom, 12)
+                footer
             }
         }
         .frame(width: 360)
-        .onAppear { query = ""; searchFocused = true }
+        .onAppear { list.reset(); searchFocused = true }
+    }
+
+    /// The summary and Clear — or, right after a deletion, Undo.
+    private var footer: some View {
+        VStack(spacing: 0) {
+            Divider().opacity(0.5)
+            ZStack {
+                if let undo = list.undo {
+                    HStack(spacing: 8) {
+                        Image(systemName: "trash").font(.system(size: 10, weight: .medium)).foregroundStyle(.tertiary)
+                        Text(undo.text).font(.system(size: 11, weight: .medium)).foregroundStyle(.secondary)
+                        Spacer()
+                        Button { list.undoLast() } label: {
+                            HStack(spacing: 4) {
+                                Image(systemName: "arrow.uturn.backward").font(.system(size: 9.5, weight: .semibold))
+                                Text("Undo")
+                                Text("⌘Z").foregroundStyle(.tertiary)
+                            }
+                        }
+                        .buttonStyle(.borderless).font(.system(size: 11, weight: .semibold))
+                    }
+                    .transition(.opacity.combined(with: .offset(y: reduceMotion ? 0 : 6)))
+                } else {
+                    HStack {
+                        Text(summary).font(.system(size: 10)).foregroundStyle(.tertiary)
+                            .contentTransition(.numericText()).animation(Motion.list, value: summary)
+                        Spacer()
+                        Button(clearTitle) { list.clear() }
+                            .buttonStyle(.borderless).font(.system(size: 10, weight: .medium))
+                            .foregroundStyle(list.confirmingClear ? Color.red : Color.secondary)
+                            .contentTransition(.interpolate)
+                            .disabled(history.recent.isEmpty)
+                    }
+                    .transition(.opacity.combined(with: .offset(y: reduceMotion ? 0 : -6)))
+                }
+            }
+            .frame(height: 16)
+            .padding(.horizontal, 16).padding(.top, 10).padding(.bottom, 12)
+        }
+    }
+
+    private var clearTitle: String {
+        if list.confirmingClear {
+            let count = history.recent.count
+            return count == 1 ? String(localized: "Clear 1 scan?") : String(localized: "Clear \(count) scans?")
+        }
+        return history.pinned.isEmpty ? String(localized: "Clear") : String(localized: "Clear unpinned")
+    }
+
+    /// Deleted rows slide off to the right as the ones below close up; new ones settle in from above.
+    private var rowTransition: AnyTransition {
+        reduceMotion ? .opacity : .asymmetric(
+            insertion: .opacity.combined(with: .scale(scale: 0.96, anchor: .top)),
+            removal: .opacity.combined(with: .offset(x: 40)).combined(with: .scale(scale: 0.98)))
     }
 
     private var searchField: some View {
         HStack(spacing: 7) {
             Image(systemName: "magnifyingglass").font(.system(size: 11, weight: .medium)).foregroundStyle(.tertiary)
-            TextField("Search", text: $query)
+            TextField("Search", text: $list.query)
                 .textFieldStyle(.plain).font(.system(size: 12.5))
                 .focused($searchFocused)
-                .onExitCommand { query = "" }
-            if !query.isEmpty {
-                Button { query = "" } label: { Image(systemName: "xmark.circle.fill").foregroundStyle(.tertiary) }
+                .onExitCommand { list.query = "" }
+            if !list.query.isEmpty {
+                Button { list.query = "" } label: { Image(systemName: "xmark.circle.fill").foregroundStyle(.tertiary) }
                     .buttonStyle(.plain)
             }
         }
@@ -96,19 +165,35 @@ struct HistoryView: View {
             .padding(.horizontal, 8).padding(.top, 10).padding(.bottom, 2)
     }
 
-    @ViewBuilder private func rows(_ scans: [Scan]) -> some View {
-        ForEach(Array(scans.enumerated()), id: \.element.id) { index, item in
-            if index > 0 { Divider().opacity(0.5).padding(.horizontal, 8) }
-            ScanRow(item: item, open: { open(item) },
-                    togglePin: { withAnimation(.easeOut(duration: 0.2)) { history.togglePin(item.id) } },
-                    remove: { withAnimation(.easeOut(duration: 0.2)) { history.remove(item.id) } })
+    private enum Entry: Identifiable {
+        case header(String, String), scan(Scan, first: Bool), noMatch
+        var id: String {
+            switch self {
+            case .header(let title, _): "header-" + title
+            case .scan(let item, _): item.id.uuidString
+            case .noMatch: "no-match"
+            }
         }
+    }
+
+    private var entries: [Entry] {
+        let pinned = list.pinned, recent = list.recent
+        var list: [Entry] = []
+        if !pinned.isEmpty {
+            list.append(.header(String(localized: "Pinned"), "pin.fill"))
+            list += pinned.enumerated().map { .scan($1, first: $0 == 0) }
+            if !recent.isEmpty { list.append(.header(String(localized: "Recent"), "clock")) }
+        }
+        list += recent.enumerated().map { .scan($1, first: $0 == 0) }
+        if pinned.isEmpty && recent.isEmpty { list.append(.noMatch) }
+        return list
     }
 
     private var summary: String {
         let count = history.items.count
         let pins = history.pinned.count
-        return "\(count) \(count == 1 ? "scan" : "scans")" + (pins > 0 ? " · \(pins) pinned" : "")
+        let scans = count == 1 ? String(localized: "1 scan") : String(localized: "\(count) scans")
+        return pins > 0 ? scans + " · " + String(localized: "\(pins) pinned") : scans
     }
 }
 
@@ -134,10 +219,15 @@ struct PermissionBanner: View {
     /// Chosen languages that aren't downloaded — scans into them can't be translated yet.
     private var missing: [String] { packs.selected.filter { [.needed, .failed].contains(packs.status[$0]) } }
 
+    private var missingText: String {
+        let names = ListFormatter.localizedString(byJoining: missing.map { makeLang($0).name })
+        return missing.count == 1 ? String(localized: "\(names) isn’t downloaded yet") : String(localized: "\(names) aren’t downloaded yet")
+    }
+
     private var languageRow: some View {
         HStack(spacing: 8) {
             Image(systemName: "arrow.down.circle.fill").foregroundStyle(.orange)
-            Text("\(ListFormatter.localizedString(byJoining: missing.map { makeLang($0).name })) \(missing.count == 1 ? "isn’t" : "aren’t") downloaded yet")
+            Text(missingText)
                 .font(.system(size: 11)).foregroundStyle(.secondary).lineLimit(2)
             Spacer()
             Button("Download") { NotificationCenter.default.post(name: IntroView.open, object: nil) }
@@ -147,7 +237,7 @@ struct PermissionBanner: View {
         .background(RoundedRectangle(cornerRadius: 8, style: .continuous).fill(Color.orange.opacity(0.1)))
     }
 
-    func row(_ text: String, _ pane: Permissions.Pane) -> some View {
+    func row(_ text: LocalizedStringKey, _ pane: Permissions.Pane) -> some View {
         HStack(spacing: 8) {
             Image(systemName: "exclamationmark.circle.fill").foregroundStyle(.orange)
             Text(text).font(.system(size: 11)).foregroundStyle(.secondary)
@@ -163,6 +253,7 @@ struct PermissionBanner: View {
 /// One scan: the translation leads, the original follows quietly, languages and time stay out of the way.
 struct ScanRow: View {
     let item: Scan
+    var selected = false
     var open: () -> Void
     var togglePin: () -> Void
     var remove: () -> Void
@@ -203,11 +294,11 @@ struct ScanRow: View {
                 iconButton(item.pinned ? "pin.slash" : "pin", item.pinned ? "Unpin" : "Pin", action: togglePin)
                 iconButton("trash", "Delete", action: remove)
             }
-            .opacity(hover ? 1 : 0)
+            .opacity(hover || selected ? 1 : 0)
             .offset(y: -3)
         }
         .padding(.horizontal, 8).padding(.vertical, 11)
-        .background(RoundedRectangle(cornerRadius: 9, style: .continuous).fill(Color.primary.opacity(hover ? 0.06 : 0)))
+        .background(RoundedRectangle(cornerRadius: 9, style: .continuous).fill(selected ? Color.accentColor.opacity(0.16) : Color.primary.opacity(hover ? 0.06 : 0)))
         .contentShape(Rectangle())
         .onHover { inside in withAnimation(.easeOut(duration: 0.12)) { hover = inside } }
         .onTapGesture(perform: open)
@@ -218,7 +309,7 @@ struct ScanRow: View {
                 NSPasteboard.general.setString(item.original, forType: .string)
             }
             Divider()
-            Button(item.pinned ? "Unpin" : "Pin", action: togglePin)
+            Button(item.pinned ? LocalizedStringKey("Unpin") : LocalizedStringKey("Pin"), action: togglePin)
             Button("Delete", role: .destructive, action: remove)
         }
     }
@@ -241,9 +332,10 @@ struct ScanRow: View {
         return format.string(from: item.date)
     }
 
-    private func iconButton(_ name: String, _ help: String, action: @escaping () -> Void) -> some View {
+    private func iconButton(_ name: String, _ help: LocalizedStringKey, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             Image(systemName: name).font(.system(size: 10.5, weight: .medium)).frame(width: 22, height: 22)
+                .contentTransition(.symbolEffect(.replace))
                 .foregroundStyle(.secondary)
                 .background(Circle().fill(Color.primary.opacity(0.07)))
         }

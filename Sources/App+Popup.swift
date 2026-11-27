@@ -45,12 +45,21 @@ extension AppDelegate: NSWindowDelegate {
         origin.x = min(max(origin.x, visible.minX + margin), visible.maxX - size.width - margin)
         origin.y = min(max(origin.y, visible.minY + margin), visible.maxY - size.height - margin)
 
-        panel.setFrame(NSRect(origin: origin, size: size), display: true)
+        // fades in while settling the last few points towards the selection
+        let final = NSRect(origin: origin, size: size)
+        popupFrame = final
+        let lift: CGFloat = Motion.reduced ? 0 : (anchoredBelow ? -6 : 6)
+        panel.setFrame(final.offsetBy(dx: 0, dy: lift), display: true)
         panel.alphaValue = 0
         shownAt = Date()
         panel.orderFrontRegardless()    // on top even though Lensy isn't the active app
         panel.makeKey()                 // non-activating: takes keys without stealing focus
-        NSAnimationContext.runAnimationGroup { $0.duration = 0.14; panel.animator().alphaValue = 1 }
+        NSAnimationContext.runAnimationGroup { ctx in
+            ctx.duration = 0.2
+            ctx.timingFunction = CAMediaTimingFunction(controlPoints: 0.2, 0.9, 0.3, 1)
+            panel.animator().alphaValue = 1
+            panel.animator().setFrame(final, display: true)
+        }
         panel.invalidateShadow()
         installPopupKeys()
     }
@@ -58,7 +67,7 @@ extension AppDelegate: NSWindowDelegate {
     func hidePopup() {
         guard let panel, panel.isVisible else { return }
         removePopupKeys()
-        NSAnimationContext.runAnimationGroup({ $0.duration = 0.1; panel.animator().alphaValue = 0 }) {
+        NSAnimationContext.runAnimationGroup({ $0.duration = 0.12; $0.timingFunction = CAMediaTimingFunction(name: .easeIn); panel.animator().alphaValue = 0 }) {
             MainActor.assumeIsolated { if panel.alphaValue < 0.05 { panel.orderOut(nil) } }   // unless re-shown meanwhile
         }
     }
@@ -82,10 +91,12 @@ extension AppDelegate: NSWindowDelegate {
         let size = content.fittingSize
         guard abs(size.height - panel.frame.height) > 0.5,
               let screen = panel.screen ?? NSScreen.main ?? NSScreen.screens.first else { return }
-        var frame = panel.frame
+        // while it's still sliding in, grow from where it's going, not from where it is
+        var frame = Date().timeIntervalSince(shownAt) < 0.3 ? popupFrame ?? panel.frame : panel.frame
         if anchoredBelow { frame.origin.y = max(frame.maxY - size.height, screen.visibleFrame.minY + 8) }
         else { frame.origin.y = min(frame.minY, screen.visibleFrame.maxY - 8 - size.height) }
         frame.size = size
+        popupFrame = frame
         NSAnimationContext.runAnimationGroup { ctx in
             ctx.duration = 0.18
             ctx.allowsImplicitAnimation = true

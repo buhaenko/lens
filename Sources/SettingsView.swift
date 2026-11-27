@@ -76,7 +76,7 @@ struct SettingsView: View {
 
             group("Shortcuts") {
                 row("Scan & translate") {
-                    Text(recording ? "Type a shortcut…" : shortcutLabel)
+                    Text(recording ? String(localized: "Type a shortcut…") : shortcutLabel)
                         .font(.system(size: 11.5, weight: .medium, design: .rounded))
                         .foregroundStyle(recording ? Color.accentColor : .secondary)
                         .padding(.horizontal, 8).frame(height: 22)
@@ -111,7 +111,7 @@ struct SettingsView: View {
                     row("History filters") {
                         Button { showFilters.toggle() } label: {
                             HStack(spacing: 4) {
-                                Text(activeFilters == 0 ? "None" : "\(activeFilters) on")
+                                (activeFilters == 0 ? Text("None") : Text("\(activeFilters) on"))
                                 Image(systemName: "chevron.right").font(.system(size: 9, weight: .semibold))
                             }
                             .font(.system(size: 12)).foregroundStyle(.secondary).contentShape(Rectangle())
@@ -125,6 +125,14 @@ struct SettingsView: View {
             }
 
             group("General") {
+                row("App language") {
+                    Picker("", selection: Binding(get: { AppLanguage.current }, set: { AppLanguage.switchTo($0, reopening: "settings") })) {
+                        ForEach(AppLanguage.allCases) { Text($0.name).tag($0) }
+                    }
+                    .labelsHidden().fixedSize()
+                    .help(String(localized: "Lensy restarts to switch the language."))
+                }
+                Divider().padding(.leading, 12)
                 row("Appearance") {
                     Picker("", selection: $appearance) {
                         ForEach(Appearance.allCases) { choice in
@@ -191,7 +199,7 @@ struct SettingsView: View {
 
     // MARK: - Building blocks
 
-    private func group<Content: View>(_ title: String, footer: String? = nil, @ViewBuilder _ content: () -> Content) -> some View {
+    private func group<Content: View>(_ title: LocalizedStringKey, footer: LocalizedStringKey? = nil, @ViewBuilder _ content: () -> Content) -> some View {
         VStack(alignment: .leading, spacing: 6) {
             Text(title).font(.system(size: 11, weight: .medium)).foregroundStyle(.secondary).padding(.leading, 4)
             VStack(spacing: 0) { content() }
@@ -203,7 +211,7 @@ struct SettingsView: View {
         }
     }
 
-    private func row<Trailing: View>(_ title: String, @ViewBuilder _ trailing: () -> Trailing) -> some View {
+    private func row<Trailing: View>(_ title: LocalizedStringKey, @ViewBuilder _ trailing: () -> Trailing) -> some View {
         HStack {
             Text(title).font(.system(size: 13))
             Spacer()
@@ -212,11 +220,11 @@ struct SettingsView: View {
         .padding(.horizontal, 12).frame(height: 38)
     }
 
-    private func toggleRow(_ title: String, _ value: Binding<Bool>) -> some View {
+    private func toggleRow(_ title: LocalizedStringKey, _ value: Binding<Bool>) -> some View {
         row(title) { Toggle("", isOn: value).labelsHidden().toggleStyle(.switch).controlSize(.small) }
     }
 
-    private func permissionRow(_ title: String, pane: Permissions.Pane) -> some View {
+    private func permissionRow(_ title: LocalizedStringKey, pane: Permissions.Pane) -> some View {
         row(title) { Button("Allow…") { Permissions.guide(to: pane) }.controlSize(.small) }
             .foregroundStyle(.orange)
     }

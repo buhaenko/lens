@@ -1,0 +1,186 @@
+/* Lensy — Spanish. Keys are the English UI strings. Plurals live in Localizable.stringsdict. */
+
+/* MARK: Status menu */
+"Scan & Translate" = "Escanear y traducir";
+"Clear History" = "Borrar historial";
+"Settings…" = "Ajustes…";
+"Send Feedback…" = "Enviar comentarios…";
+"Quit Lensy" = "Salir de Lensy";
+
+/* MARK: Updates (menu line + alerts) */
+"Development Build" = "Versión de desarrollo";
+"Updates are off" = "Actualizaciones desactivadas";
+"Check for Updates…" = "Buscar actualizaciones…";
+"Checking for Updates…" = "Buscando actualizaciones…";
+"Lensy Is Up to Date" = "Lensy está actualizado";
+"%@ is the latest version" = "%@ es la versión más reciente";
+"Couldn’t connect — try again" = "No se ha podido conectar — inténtalo de nuevo";
+"Update to Lensy %@…" = "Actualizar a Lensy %@…";
+"You have %@" = "Tienes la versión %@";
+"Installing Lensy %@…" = "Instalando Lensy %@…";
+"Lensy restarts when it’s done" = "Al terminar, Lensy se reiniciará";
+"Couldn’t check for updates" = "No se han podido buscar actualizaciones";
+"Check your connection and try again." = "Comprueba la conexión e inténtalo de nuevo.";
+"Lensy %@ is available" = "Lensy %@ está disponible";
+"You have %@. Lensy restarts in a second — your history and settings stay." = "Tienes la versión %@. Lensy se reiniciará en un momento — tu historial y tus ajustes se conservan.";
+"Install & Restart" = "Instalar y reiniciar";
+"Update Lensy manually" = "Actualiza Lensy manualmente";
+"Lensy couldn’t update" = "No se ha podido actualizar Lensy";
+"Couldn’t download the update. Check your connection and try again." = "No se ha podido descargar la actualización. Comprueba la conexión e inténtalo de nuevo.";
+"The downloaded update isn’t signed by Lensy, so it wasn’t installed." = "La actualización descargada no está firmada por Lensy, así que no se ha instalado.";
+"The downloaded update looks broken, so it wasn’t installed." = "La actualización descargada parece dañada, así que no se ha instalado.";
+"Lensy can’t replace itself in this folder. Download the new version and drag it to Applications." = "Lensy no puede reemplazarse en esta carpeta. Descarga la nueva versión y arrástrala a Aplicaciones.";
+"OK" = "Aceptar";
+"Later" = "Más tarde";
+
+/* MARK: Shortcuts */
+"Press %@" = "Pulsa %@";
+"Tap %@ or press %@" = "Pulsa %1$@ o %2$@";
+"Off" = "Desactivado";
+"Right ⌘" = "⌘ derecho";
+"Right ⌥" = "⌥ derecho";
+"Right ⇧" = "⇧ derecho";
+"Right ⌃" = "⌃ derecho";
+
+/* MARK: Appearance, menu bar icon */
+"Auto" = "Auto";
+"Light" = "Claro";
+"Dark" = "Oscuro";
+"Translate" = "Traducir";
+"Scan text" = "Escanear texto";
+"Prism" = "Prisma";
+
+/* MARK: History popover */
+"Scan" = "Escanear";
+"%@ · right-click the icon for Settings" = "%@ · clic secundario en el icono para abrir Ajustes";
+"No scans yet" = "Aún no hay escaneos";
+"%@, then select text" = "%@ y selecciona el texto";
+"Nothing matches “%@”" = "Sin resultados para «%@»";
+"Undo" = "Deshacer";
+"Search" = "Buscar";
+"Pinned" = "Fijados";
+"Recent" = "Recientes";
+"1 scan" = "1 escaneo";
+"Clear 1 scan?" = "¿Borrar 1 escaneo?";
+"Clear" = "Borrar";
+"Clear unpinned" = "Borrar no fijados";
+"Deleted" = "Eliminado";
+"Copied" = "Copiado";
+"Copy translation" = "Copiar traducción";
+"Copy Translation" = "Copiar traducción";
+"Copy Original" = "Copiar original";
+"Pin" = "Fijar";
+"Unpin" = "Dejar de fijar";
+"Delete" = "Eliminar";
+
+/* MARK: Permission and language banners */
+"The quick-scan key needs Accessibility" = "El escaneo rápido requiere Accesibilidad";
+"Scanning needs Screen Recording" = "Para escanear se necesita Grabación de pantalla";
+"%@ isn’t downloaded yet" = "%@ aún no se ha descargado";
+"%@ aren’t downloaded yet" = "%@ aún no se han descargado";
+"Download" = "Descargar";
+"Open" = "Abrir";
+
+/* MARK: Crash banner */
+"Lensy quit unexpectedly last time" = "Lensy se cerró inesperadamente la última vez";
+"Send Report" = "Enviar informe";
+"Dismiss" = "Cerrar";
+
+/* MARK: Feedback */
+"Send Feedback" = "Enviar comentarios";
+"Ideas, bugs, a language that reads badly — all welcome." = "Ideas, errores, un idioma que se reconoce mal — todo es bienvenido.";
+"Your email" = "Tu correo";
+"Message" = "Mensaje";
+"Cancel" = "Cancelar";
+"Send" = "Enviar";
+"Thank you!" = "¡Gracias!";
+"Your message is on its way. If it needs an answer, the reply goes to %@." = "Tu mensaje está en camino. Si requiere respuesta, la recibirás en %@.";
+"Done" = "Hecho";
+"Couldn’t reach the server — check your connection and try again." = "No se ha podido conectar con el servidor — comprueba la conexión e inténtalo de nuevo.";
+"Couldn’t send right now — please try again later." = "No se ha podido enviar — inténtalo más tarde.";
+
+/* MARK: History filters */
+"History filters" = "Filtros del historial";
+"Everything is still translated — filters only decide what’s remembered." = "Todo se sigue traduciendo — los filtros solo deciden qué se guarda.";
+"Don’t save text in" = "No guardar texto en estos idiomas";
+"Language" = "Idioma";
+"Numbers, prices and codes" = "Números, precios y códigos";
+"“€ 12,99”, “08:30”, “#A7F3”" = "«€ 12,99», «08:30», «#A7F3»";
+"Private info" = "Datos personales";
+"Emails, links, phone, card and IBAN numbers" = "Correos, enlaces, teléfonos, tarjetas e IBAN";
+"Shorter than" = "Más corto que";
+"Text containing" = "Texto que contenga";
+"password, invoice, …" = "contraseña, factura, …";
+"Apply to saved scans" = "Aplicar a escaneos guardados";
+"Nothing to remove" = "Nada que quitar";
+"Removed %lld · pinned kept" = "Quitados: %lld · fijados conservados";
+"Remove" = "Quitar";
+
+/* MARK: Intro / language downloads */
+"Welcome to Lensy" = "Te damos la bienvenida a Lensy";
+"Choose the languages you want to read in.\nThey download once — then everything works offline." = "Elige los idiomas en los que quieres leer.\nSe descargan una vez — después todo funciona sin conexión.";
+"Add language" = "Añadir idioma";
+"Screen Recording" = "Grabación de pantalla";
+"Lets Lensy read the area you select. Nothing is recorded or saved." = "Permite a Lensy leer la zona que selecciones. No se graba ni se guarda nada.";
+"Allow…" = "Permitir…";
+"Downloading…" = "Descargando…";
+"Download 1 language" = "Descargar 1 idioma";
+"Start using Lensy" = "Empezar a usar Lensy";
+"Keep this window open until it’s done" = "Deja esta ventana abierta hasta que termine";
+"Tab in the popup switches between these" = "Tab en la ventana de traducción cambia entre ellos";
+"Downloaded from Apple, only once" = "Se descarga de Apple solo una vez";
+"Ready" = "Listo";
+"Try again" = "Reintentar";
+"Not available" = "No disponible";
+
+/* MARK: Overlay language hint */
+"%@ isn’t downloaded yet — press D to download it" = "%@ aún no se ha descargado — pulsa D para descargarlo";
+"Apple can’t translate into %@" = "Apple no traduce a este idioma: %@";
+"Translating to %@" = "Idioma de destino: %@";
+"Translating to %@ · %@ not downloaded — press D" = "Idioma de destino: %1$@ · %2$@ sin descargar — pulsa D";
+
+/* MARK: Translation popup */
+"download" = "descargar";
+"try again" = "reintentar";
+"language" = "idioma";
+"copied" = "copiado";
+"copy text" = "copiar texto";
+"copy" = "copiar";
+"close" = "cerrar";
+"Apple can’t translate %@" = "Apple no puede traducir %@";
+"Couldn’t translate this" = "No se ha podido traducir";
+"Download it once — then translations work offline, right here." = "Descárgalo una vez — y podrás traducir sin conexión, aquí mismo.";
+"Press Tab to pick another language. ⌘C copies the text." = "Pulsa Tab para elegir otro idioma. ⌘C copia el texto.";
+"Try Again" = "Reintentar";
+"It’s taking too long — macOS didn’t answer." = "Está tardando demasiado — macOS no ha respondido.";
+
+/* MARK: Settings */
+"Translate into" = "Traducir a";
+"Tab in the popup cycles through these, in this order. Drag to reorder." = "Tab en la ventana de traducción los recorre en este orden. Arrastra para reordenarlos.";
+"Download for offline use…" = "Descargar para usar sin conexión…";
+"Shortcuts" = "Atajos";
+"Scan & translate" = "Escanear y traducir";
+"Type a shortcut…" = "Pulsa un atajo…";
+"Click, then press the new shortcut · Esc cancels" = "Haz clic y pulsa el nuevo atajo · Esc cancela";
+"Quick scan — tap alone" = "Escaneo rápido — solo la tecla";
+"Popup & history" = "Ventana de traducción e historial";
+"Show the original text" = "Mostrar el texto original";
+"Copy the translation automatically" = "Copiar la traducción automáticamente";
+"Keep history" = "Guardar historial";
+"None" = "Ninguno";
+"%lld on" = "Activos: %lld";
+"General" = "General";
+"Appearance" = "Apariencia";
+"Menu bar icon" = "Icono de la barra de menús";
+"Launch at login" = "Abrir al iniciar sesión";
+"Update automatically" = "Actualizar automáticamente";
+"Screen Recording is off" = "Grabación de pantalla desactivada";
+"Accessibility is off — needed for quick scan" = "Accesibilidad desactivada — necesaria para el escaneo rápido";
+"Recognition and translation run on your Mac · v%@" = "El reconocimiento y la traducción se hacen en tu Mac · v%@";
+"Downloaded" = "Descargado";
+"Works offline" = "Funciona sin conexión";
+"Not downloaded" = "No descargado";
+"Scans won’t translate into it until it’s downloaded" = "Los escaneos no se traducirán a este idioma hasta que se descargue";
+"Checking…" = "Comprobando…";
+"App language" = "Idioma de la app";
+"Lensy restarts to switch the language." = "Lensy se reiniciará para cambiar el idioma.";

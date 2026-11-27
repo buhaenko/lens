@@ -87,14 +87,29 @@ struct Scan: Codable, Identifiable, Equatable {
         save()
     }
 
-    func remove(_ id: UUID) {
+    /// Returns what was removed, for Undo.
+    @discardableResult func remove(_ id: UUID) -> [Scan] {
+        let removed = items.filter { $0.id == id }
         items.removeAll { $0.id == id }
         save()
+        return removed
     }
 
-    /// Clears everything except pinned scans.
-    func clear() {
+    /// Clears everything except pinned scans. Returns what was removed, for Undo.
+    @discardableResult func clear() -> [Scan] {
+        let removed = items.filter { !$0.pinned }
         items.removeAll { !$0.pinned }
+        save()
+        return removed
+    }
+
+    /// Undo: puts removed scans back where they were (newest first), unless they're already there again.
+    func restore(_ scans: [Scan]) {
+        let missing = scans.filter { scan in !items.contains { $0.id == scan.id } }
+        guard !missing.isEmpty else { return }
+        items = (items + missing).enumerated()
+            .sorted { $0.element.date != $1.element.date ? $0.element.date > $1.element.date : $0.offset < $1.offset }
+            .map(\.element)
         save()
     }
 

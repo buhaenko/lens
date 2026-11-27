@@ -60,7 +60,7 @@ struct FilterView: View {
                     .controlSize(.small).disabled(filter.activeCount == 0)
                 Spacer()
                 if let cleaned {
-                    Text(cleaned == 0 ? "Nothing to remove" : "Removed \(cleaned) · pinned kept")
+                    (cleaned == 0 ? Text("Nothing to remove") : Text("Removed \(cleaned) · pinned kept"))
                         .font(.system(size: 11)).foregroundStyle(.secondary).transition(.opacity)
                 }
             }
@@ -81,11 +81,11 @@ struct FilterView: View {
         return (mine + rest).filter { !filter.skipLanguages.contains($0) }
     }
 
-    private func label(_ text: String) -> some View {
+    private func label(_ text: LocalizedStringKey) -> some View {
         Text(text).font(.system(size: 11, weight: .medium)).foregroundStyle(.secondary)
     }
 
-    private func toggle(_ title: String, detail: String, _ value: Binding<Bool>) -> some View {
+    private func toggle(_ title: LocalizedStringKey, detail: LocalizedStringKey, _ value: Binding<Bool>) -> some View {
         HStack {
             VStack(alignment: .leading, spacing: 1) {
                 Text(title).font(.system(size: 12.5))

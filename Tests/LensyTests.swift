@@ -411,6 +411,7 @@ final class UnsafeMutableTransferBox<T>: @unchecked Sendable { var value: T; ini
 
     try? FileManager.default.removeItem(at: tmp)
     runLanguageStatusTests()
+    runHistoryListTests()
     runRobustnessTests()
     finish("Lensy")
 }

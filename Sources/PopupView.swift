@@ -6,6 +6,8 @@ import Translation
 
 struct PopupView: View {
     @ObservedObject var model: TranslationModel
+    @Namespace private var pill
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -21,7 +23,10 @@ struct PopupView: View {
                     Text(l.code)
                         .foregroundStyle(on ? Color.primary : Color.secondary.opacity(l.id == model.source ? 0.35 : 1))
                         .padding(.horizontal, 7).padding(.vertical, 3)
-                        .background(Capsule().fill(on ? Color.primary.opacity(0.12) : .clear))
+                        .background {
+                            // one highlight that slides to the language picked with Tab
+                            if on { Capsule().fill(Color.primary.opacity(0.12)).matchedGeometryEffect(id: "target", in: pill) }
+                        }
                         .contentShape(Capsule())
                         .onTapGesture { if l.id != model.source { model.select(l.id) } }
                 }
@@ -29,7 +34,7 @@ struct PopupView: View {
                 if model.busy { ProgressView().controlSize(.mini) }
             }
             .font(.system(size: 11, weight: .semibold, design: .rounded))
-            .animation(.easeOut(duration: 0.15), value: model.target)
+            .animation(Motion.list, value: model.target)
 
             // original
             if defaults.object(forKey: "showOriginal") as? Bool ?? true || model.problem != nil {
@@ -50,10 +55,12 @@ struct PopupView: View {
                         .transition(.opacity)
                 } else if let problem = model.problem {
                     ProblemView(problem: problem, source: model.source, target: model.target, fix: model.fix)
-                        .transition(.opacity.combined(with: .offset(y: 3)))
+                        .transition(.opacity.combined(with: .offset(y: reduceMotion ? 0 : 3)))
                 } else {
                     ScrollView {
                         Text(model.translated.isEmpty ? " " : model.translated)
+                            .id(model.translated)                       // a new translation fades in instead of replacing the old one in place
+                            .transition(.opacity)
                             .font(.system(size: 15, weight: .regular))
                             .lineSpacing(2)
                             .textSelection(.enabled)
@@ -62,10 +69,12 @@ struct PopupView: View {
                     .scrollIndicators(.never)
                     .frame(maxHeight: 320)
                     .fixedSize(horizontal: false, vertical: true)
-                    .transition(.opacity.combined(with: .offset(y: 3)))
+                    .transition(.opacity.combined(with: .offset(y: reduceMotion ? 0 : 3)))
                 }
             }
             .animation(.easeOut(duration: 0.22), value: model.busy)
+            .animation(.easeOut(duration: 0.2), value: model.translated)
+            .animation(.easeOut(duration: 0.2), value: model.problem)
 
             // hints
             HStack(spacing: 12) {
@@ -74,7 +83,8 @@ struct PopupView: View {
                 case .failed: hint("↩", "try again")
                 default: EmptyView()
                 }
-                hint("⇥", "language"); hint("⌘C", model.copied ? "copied" : model.translated.isEmpty ? "copy text" : "copy"); hint("esc", "close")
+                hint("⇥", "language"); hint("⌘C", model.copied ? "copied" : model.translated.isEmpty ? "copy text" : "copy")
+                    .contentTransition(.opacity).animation(.easeOut(duration: 0.15), value: model.copied); hint("esc", "close")
             }
             .font(.system(size: 10, weight: .medium, design: .rounded))
             .foregroundStyle(.tertiary)
@@ -96,7 +106,7 @@ struct PopupView: View {
     /// Roughly as many skeleton lines as the translation will take (≈ 48 chars per line at this width).
     var skeletonLines: Int { min(5, max(1, Int((Double(model.original.count) / 48).rounded(.up)))) }
 
-    func hint(_ k: String, _ t: String) -> some View {
+    func hint(_ k: String, _ t: LocalizedStringKey) -> some View {
         HStack(spacing: 4) {
             Text(k).padding(.horizontal, 4).padding(.vertical, 1)
                 .background(RoundedRectangle(cornerRadius: 3).fill(Color.primary.opacity(0.06)))
@@ -147,26 +157,27 @@ struct ProblemView: View {
         switch problem {
         case .notDownloaded(let ids):
             let names = ListFormatter.localizedString(byJoining: ids.map { makeLang($0).name })
-            return ids.count == 1 ? "\(names) isn’t downloaded yet" : "\(names) aren’t downloaded yet"
+            return ids.count == 1 ? String(localized: "\(names) isn’t downloaded yet") : String(localized: "\(names) aren’t downloaded yet")
         case .unsupported:
-            return "Apple can’t translate \(source.map { makeLang($0).name + " → " } ?? "")\(makeLang(target).name)"
+            let pair = (source.map { makeLang($0).name + " → " } ?? "") + makeLang(target).name
+            return String(localized: "Apple can’t translate \(pair)")
         case .failed:
-            return "Couldn’t translate this"
+            return String(localized: "Couldn’t translate this")
         }
     }
 
     private var detail: String {
         switch problem {
-        case .notDownloaded: "Download it once — then translations work offline, right here."
-        case .unsupported: "Press Tab to pick another language. ⌘C copies the text."
+        case .notDownloaded: String(localized: "Download it once — then translations work offline, right here.")
+        case .unsupported: String(localized: "Press Tab to pick another language. ⌘C copies the text.")
         case .failed(let reason): reason
         }
     }
 
     private var action: String? {
         switch problem {
-        case .notDownloaded: "Download"
-        case .failed: "Try Again"
+        case .notDownloaded: String(localized: "Download")
+        case .failed: String(localized: "Try Again")
         case .unsupported: nil
         }
     }

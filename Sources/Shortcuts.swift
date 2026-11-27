@@ -10,11 +10,11 @@ enum TapKey: String, CaseIterable, Identifiable {
 
     var label: String {
         switch self {
-        case .off: "Off"
-        case .rightCommand: "Right ⌘"
-        case .rightOption: "Right ⌥"
-        case .rightShift: "Right ⇧"
-        case .rightControl: "Right ⌃"
+        case .off: String(localized: "Off")
+        case .rightCommand: String(localized: "Right ⌘")
+        case .rightOption: String(localized: "Right ⌥")
+        case .rightShift: String(localized: "Right ⇧")
+        case .rightControl: String(localized: "Right ⌃")
         }
     }
 
@@ -55,5 +55,6 @@ enum ScanHotKey {
 /// "Tap right ⌘ or press ⇧⌘7" — whatever the user configured.
 func shortcutHint() -> String {
     let tap = TapKey.current
-    return tap == .off ? "Press \(ScanHotKey.label)" : "Tap \(tap.label.lowercased()) or press \(ScanHotKey.label)"
+    let key = ScanHotKey.label
+    return tap == .off ? String(localized: "Press \(key)") : String(localized: "Tap \(tap.label.lowercased()) or press \(key)")
 }

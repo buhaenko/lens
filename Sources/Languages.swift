@@ -21,7 +21,7 @@ func makeLang(_ id: String) -> Lang {
 var langs: [Lang] {
     if let saved = defaults.stringArray(forKey: "languages"), !saved.isEmpty { return saved.map(makeLang) }
     var ids: [String] = []
-    for preferred in Locale.preferredLanguages {
+    for preferred in systemLanguages {
         let code = Locale.Language(identifier: preferred).languageCode?.identifier ?? preferred
         if !ids.contains(code) { ids.append(code) }
     }

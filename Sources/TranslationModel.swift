@@ -106,7 +106,7 @@ import Translation
                     config = .init(source: from, target: to)
                 }
                 try? await Task.sleep(for: timeout)
-                if attempt == id && busy { fail("It’s taking too long — macOS didn’t answer.") }
+                if attempt == id && busy { fail(String(localized: "It’s taking too long — macOS didn’t answer.")) }
             case .unsupported:
                 busy = false; problem = .unsupported
             default:

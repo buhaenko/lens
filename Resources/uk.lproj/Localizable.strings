@@ -1,0 +1,186 @@
+/* Lensy — Ukrainian. Keys are the English UI strings. Plurals live in Localizable.stringsdict. */
+
+/* MARK: Status menu */
+"Scan & Translate" = "Сканувати й перекласти";
+"Clear History" = "Очистити історію";
+"Settings…" = "Налаштування…";
+"Send Feedback…" = "Надіслати відгук…";
+"Quit Lensy" = "Вийти з Lensy";
+
+/* MARK: Updates (menu line + alerts) */
+"Development Build" = "Збірка для розробки";
+"Updates are off" = "Оновлення вимкнено";
+"Check for Updates…" = "Перевірити оновлення…";
+"Checking for Updates…" = "Перевірка оновлень…";
+"Lensy Is Up to Date" = "Lensy оновлено";
+"%@ is the latest version" = "%@ — найновіша версія";
+"Couldn’t connect — try again" = "Не вдалося з’єднатися — спробуйте ще раз";
+"Update to Lensy %@…" = "Оновити до Lensy %@…";
+"You have %@" = "У вас %@";
+"Installing Lensy %@…" = "Встановлення Lensy %@…";
+"Lensy restarts when it’s done" = "Потім Lensy перезапуститься";
+"Couldn’t check for updates" = "Не вдалося перевірити оновлення";
+"Check your connection and try again." = "Перевірте підключення й спробуйте ще раз.";
+"Lensy %@ is available" = "Доступне оновлення Lensy %@";
+"You have %@. Lensy restarts in a second — your history and settings stay." = "У вас %@. Lensy за мить перезапуститься — історія й налаштування збережуться.";
+"Install & Restart" = "Встановити й перезапустити";
+"Update Lensy manually" = "Оновіть Lensy вручну";
+"Lensy couldn’t update" = "Не вдалося оновити Lensy";
+"Couldn’t download the update. Check your connection and try again." = "Не вдалося завантажити оновлення. Перевірте підключення й спробуйте ще раз.";
+"The downloaded update isn’t signed by Lensy, so it wasn’t installed." = "Завантажене оновлення не підписане Lensy, тому його не встановлено.";
+"The downloaded update looks broken, so it wasn’t installed." = "Завантажене оновлення пошкоджене, тому його не встановлено.";
+"Lensy can’t replace itself in this folder. Download the new version and drag it to Applications." = "Lensy не може замінити себе в цій папці. Завантажте нову версію й перетягніть її в «Програми».";
+"OK" = "OK";
+"Later" = "Пізніше";
+
+/* MARK: Shortcuts */
+"Press %@" = "Натисніть %@";
+"Tap %@ or press %@" = "Натисніть %1$@ або %2$@";
+"Off" = "Вимк.";
+"Right ⌘" = "Правий ⌘";
+"Right ⌥" = "Правий ⌥";
+"Right ⇧" = "Правий ⇧";
+"Right ⌃" = "Правий ⌃";
+
+/* MARK: Appearance, menu bar icon */
+"Auto" = "Авто";
+"Light" = "Світлий";
+"Dark" = "Темний";
+"Translate" = "Переклад";
+"Scan text" = "Сканування тексту";
+"Prism" = "Призма";
+
+/* MARK: History popover */
+"Scan" = "Сканувати";
+"%@ · right-click the icon for Settings" = "%@ · правий клік на іконці — налаштування";
+"No scans yet" = "Ще немає сканів";
+"%@, then select text" = "%@, потім виділіть текст";
+"Nothing matches “%@”" = "Нічого не знайдено за «%@»";
+"Undo" = "Відмінити";
+"Search" = "Пошук";
+"Pinned" = "Закріплені";
+"Recent" = "Нещодавні";
+"1 scan" = "1 скан";
+"Clear 1 scan?" = "Очистити 1 скан?";
+"Clear" = "Очистити";
+"Clear unpinned" = "Очистити незакріплені";
+"Deleted" = "Видалено";
+"Copied" = "Скопійовано";
+"Copy translation" = "Скопіювати переклад";
+"Copy Translation" = "Скопіювати переклад";
+"Copy Original" = "Скопіювати оригінал";
+"Pin" = "Закріпити";
+"Unpin" = "Відкріпити";
+"Delete" = "Видалити";
+
+/* MARK: Permission and language banners */
+"The quick-scan key needs Accessibility" = "Швидкий скан: потрібен Універсальний доступ";
+"Scanning needs Screen Recording" = "Для сканування потрібен Запис екрана";
+"%@ isn’t downloaded yet" = "%@ ще не завантажено";
+"%@ aren’t downloaded yet" = "%@ ще не завантажено";
+"Download" = "Завантажити";
+"Open" = "Відкрити";
+
+/* MARK: Crash banner */
+"Lensy quit unexpectedly last time" = "Минулого разу стався збій Lensy";
+"Send Report" = "Надіслати звіт";
+"Dismiss" = "Закрити";
+
+/* MARK: Feedback */
+"Send Feedback" = "Надіслати відгук";
+"Ideas, bugs, a language that reads badly — all welcome." = "Ідеї, баги, погано розпізнана мова — пишіть про все.";
+"Your email" = "Ваша ел. пошта";
+"Message" = "Повідомлення";
+"Cancel" = "Скасувати";
+"Send" = "Надіслати";
+"Thank you!" = "Дякуємо!";
+"Your message is on its way. If it needs an answer, the reply goes to %@." = "Повідомлення надіслано. Якщо потрібна відповідь, вона прийде на %@.";
+"Done" = "Готово";
+"Couldn’t reach the server — check your connection and try again." = "Не вдалося з’єднатися із сервером — перевірте підключення й спробуйте ще раз.";
+"Couldn’t send right now — please try again later." = "Зараз не вдалося надіслати — спробуйте пізніше.";
+
+/* MARK: History filters */
+"History filters" = "Фільтри історії";
+"Everything is still translated — filters only decide what’s remembered." = "Перекладається все — фільтри лише вирішують, що зберегти в історії.";
+"Don’t save text in" = "Не зберігати текст мовами";
+"Language" = "Мова";
+"Numbers, prices and codes" = "Числа, ціни й коди";
+"“€ 12,99”, “08:30”, “#A7F3”" = "«€ 12,99», «08:30», «#A7F3»";
+"Private info" = "Особисті дані";
+"Emails, links, phone, card and IBAN numbers" = "Пошта, посилання, телефони, картки, IBAN";
+"Shorter than" = "Коротший ніж";
+"Text containing" = "Текст, що містить";
+"password, invoice, …" = "пароль, рахунок, …";
+"Apply to saved scans" = "Застосувати до збережених";
+"Nothing to remove" = "Нічого вилучати";
+"Removed %lld · pinned kept" = "Вилучено: %lld · закріплені лишилися";
+"Remove" = "Вилучити";
+
+/* MARK: Intro / language downloads */
+"Welcome to Lensy" = "Вітаємо в Lensy";
+"Choose the languages you want to read in.\nThey download once — then everything works offline." = "Виберіть мови, якими хочете читати.\nВони завантажуються один раз — далі все працює офлайн.";
+"Add language" = "Додати мову";
+"Screen Recording" = "Запис екрана";
+"Lets Lensy read the area you select. Nothing is recorded or saved." = "Lensy читає виділену область. Нічого не записується й не зберігається.";
+"Allow…" = "Дозволити…";
+"Downloading…" = "Завантаження…";
+"Download 1 language" = "Завантажити 1 мову";
+"Start using Lensy" = "Почати роботу";
+"Keep this window open until it’s done" = "Не закривайте вікно до завершення";
+"Tab in the popup switches between these" = "Tab у вікні перекладу перемикає між ними";
+"Downloaded from Apple, only once" = "Завантажується з Apple лише раз";
+"Ready" = "Готово";
+"Try again" = "Повторити";
+"Not available" = "Недоступно";
+
+/* MARK: Overlay language hint */
+"%@ isn’t downloaded yet — press D to download it" = "%@ ще не завантажено — натисніть D, щоб завантажити";
+"Apple can’t translate into %@" = "Apple не перекладає на цю мову: %@";
+"Translating to %@" = "Мова перекладу: %@";
+"Translating to %@ · %@ not downloaded — press D" = "Мова перекладу: %1$@ · %2$@ не завантажено — натисніть D";
+
+/* MARK: Translation popup */
+"download" = "завантажити";
+"try again" = "повторити";
+"language" = "мова";
+"copied" = "скопійовано";
+"copy text" = "копіювати текст";
+"copy" = "копіювати";
+"close" = "закрити";
+"Apple can’t translate %@" = "Apple не перекладає: %@";
+"Couldn’t translate this" = "Не вдалося перекласти";
+"Download it once — then translations work offline, right here." = "Завантажте один раз — і переклад працюватиме офлайн просто тут.";
+"Press Tab to pick another language. ⌘C copies the text." = "Натисніть Tab, щоб вибрати іншу мову. ⌘C копіює текст.";
+"Try Again" = "Повторити";
+"It’s taking too long — macOS didn’t answer." = "Надто довго — macOS не відповідає.";
+
+/* MARK: Settings */
+"Translate into" = "Перекладати на";
+"Tab in the popup cycles through these, in this order. Drag to reorder." = "Tab у вікні перекладу перемикає ці мови по черзі. Перетягніть, щоб змінити порядок.";
+"Download for offline use…" = "Завантажити для роботи офлайн…";
+"Shortcuts" = "Скорочення";
+"Scan & translate" = "Сканувати й перекласти";
+"Type a shortcut…" = "Введіть скорочення…";
+"Click, then press the new shortcut · Esc cancels" = "Клацніть і натисніть нове скорочення · Esc — скасувати";
+"Quick scan — tap alone" = "Швидкий скан — лише клавіша";
+"Popup & history" = "Вікно перекладу й історія";
+"Show the original text" = "Показувати оригінал";
+"Copy the translation automatically" = "Автоматично копіювати переклад";
+"Keep history" = "Зберігати історію";
+"None" = "Немає";
+"%lld on" = "Увімкнено: %lld";
+"General" = "Загальні";
+"Appearance" = "Вигляд";
+"Menu bar icon" = "Іконка на смузі меню";
+"Launch at login" = "Відкривати під час входу";
+"Update automatically" = "Оновлювати автоматично";
+"Screen Recording is off" = "Запис екрана вимкнено";
+"Accessibility is off — needed for quick scan" = "Швидкому скану потрібен Універсальний доступ";
+"Recognition and translation run on your Mac · v%@" = "Розпізнавання й переклад — на вашому Mac · v%@";
+"Downloaded" = "Завантажено";
+"Works offline" = "Працює офлайн";
+"Not downloaded" = "Не завантажено";
+"Scans won’t translate into it until it’s downloaded" = "Скани не перекладатимуться на цю мову, доки її не завантажено";
+"Checking…" = "Перевірка…";
+"App language" = "Мова програми";
+"Lensy restarts to switch the language." = "Lensy перезапуститься, щоб змінити мову.";

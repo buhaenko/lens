@@ -30,12 +30,12 @@ struct LanguageHint: Equatable {
     var text: String {
         let name = makeLang(target).name
         switch state {
-        case .missing: return "\(name) isn’t downloaded yet — press D to download it"
-        case .unsupported: return "Apple can’t translate into \(name)"
+        case .missing: return String(localized: "\(name) isn’t downloaded yet — press D to download it")
+        case .unsupported: return String(localized: "Apple can’t translate into \(name)")
         case .checking, .ready:
-            guard !othersMissing.isEmpty else { return "Translating to \(name)" }
+            guard !othersMissing.isEmpty else { return String(localized: "Translating to \(name)") }
             let names = ListFormatter.localizedString(byJoining: othersMissing.map { makeLang($0).name })
-            return "Translating to \(name) · \(names) not downloaded — press D"
+            return String(localized: "Translating to \(name) · \(names) not downloaded — press D")
         }
     }
 
