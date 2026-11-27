@@ -11,8 +11,8 @@ struct PopupView: View {
         VStack(alignment: .leading, spacing: 12) {
             // language pills
             HStack(spacing: 4) {
-                if let s = model.source, let l = langs.first(where: { $0.id == s }) {
-                    Text(l.code).foregroundStyle(.secondary)
+                if let s = model.source {
+                    Text((langs.first { $0.id == s } ?? makeLang(s)).code).foregroundStyle(.secondary)
                     Image(systemName: "arrow.right").font(.system(size: 9, weight: .semibold)).foregroundStyle(.tertiary)
                         .padding(.horizontal, 2)
                 }
@@ -32,7 +32,7 @@ struct PopupView: View {
             .animation(.easeOut(duration: 0.15), value: model.target)
 
             // original
-            if defaults.object(forKey: "showOriginal") as? Bool ?? true {
+            if defaults.object(forKey: "showOriginal") as? Bool ?? true || model.problem != nil {
             Text(model.original)
                 .font(.system(size: 12))
                 .foregroundStyle(.secondary)
@@ -48,6 +48,9 @@ struct PopupView: View {
                 if model.busy {
                     Skeleton(lines: skeletonLines)
                         .transition(.opacity)
+                } else if let problem = model.problem {
+                    ProblemView(problem: problem, source: model.source, target: model.target, fix: model.fix)
+                        .transition(.opacity.combined(with: .offset(y: 3)))
                 } else {
                     ScrollView {
                         Text(model.translated.isEmpty ? " " : model.translated)
@@ -66,7 +69,12 @@ struct PopupView: View {
 
             // hints
             HStack(spacing: 12) {
-                hint("⇥", "language"); hint("⌘C", model.copied ? "copied" : "copy"); hint("esc", "close")
+                switch model.problem {
+                case .notDownloaded: hint("↩", "download")
+                case .failed: hint("↩", "try again")
+                default: EmptyView()
+                }
+                hint("⇥", "language"); hint("⌘C", model.copied ? "copied" : model.translated.isEmpty ? "copy text" : "copy"); hint("esc", "close")
             }
             .font(.system(size: 10, weight: .medium, design: .rounded))
             .foregroundStyle(.tertiary)
@@ -78,12 +86,10 @@ struct PopupView: View {
         .translationTask(model.config) { session in
             do {
                 let r = try await session.translate(model.original)
-                model.translated = r.targetText
-                model.record()
+                model.finish(r.targetText)
             } catch {
-                model.translated = "Translation unavailable for this pair.\n\(error.localizedDescription)"
+                model.fail(error.localizedDescription)
             }
-            model.busy = false
         }
     }
 
@@ -95,6 +101,73 @@ struct PopupView: View {
             Text(k).padding(.horizontal, 4).padding(.vertical, 1)
                 .background(RoundedRectangle(cornerRadius: 3).fill(Color.primary.opacity(0.06)))
             Text(t)
+        }
+    }
+}
+
+/// Shown instead of the translation when it can't happen yet — always with a way forward.
+struct ProblemView: View {
+    let problem: TranslationModel.Problem
+    let source: String?
+    let target: String
+    var fix: () -> Void
+
+    var body: some View {
+        HStack(alignment: .top, spacing: 10) {
+            Image(systemName: symbol).font(.system(size: 18)).foregroundStyle(tint).frame(width: 22)
+            VStack(alignment: .leading, spacing: 3) {
+                Text(title).font(.system(size: 13, weight: .semibold))
+                Text(detail).font(.system(size: 11.5)).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+            }
+            Spacer(minLength: 8)
+            if let action {
+                Button(action: fix) { Text(action) }.buttonStyle(.borderedProminent).controlSize(.small)
+            }
+        }
+        .padding(.vertical, 2)
+    }
+
+    private var symbol: String {
+        switch problem {
+        case .notDownloaded: "arrow.down.circle.fill"
+        case .unsupported: "nosign"
+        case .failed: "exclamationmark.triangle.fill"
+        }
+    }
+
+    private var tint: Color {
+        switch problem {
+        case .notDownloaded: .accentColor
+        case .unsupported: .secondary
+        case .failed: .orange
+        }
+    }
+
+    private var title: String {
+        switch problem {
+        case .notDownloaded(let ids):
+            let names = ListFormatter.localizedString(byJoining: ids.map { makeLang($0).name })
+            return ids.count == 1 ? "\(names) isn’t downloaded yet" : "\(names) aren’t downloaded yet"
+        case .unsupported:
+            return "Apple can’t translate \(source.map { makeLang($0).name + " → " } ?? "")\(makeLang(target).name)"
+        case .failed:
+            return "Couldn’t translate this"
+        }
+    }
+
+    private var detail: String {
+        switch problem {
+        case .notDownloaded: "Download it once — then translations work offline, right here."
+        case .unsupported: "Press Tab to pick another language. ⌘C copies the text."
+        case .failed(let reason): reason
+        }
+    }
+
+    private var action: String? {
+        switch problem {
+        case .notDownloaded: "Download"
+        case .failed: "Try Again"
+        case .unsupported: nil
         }
     }
 }

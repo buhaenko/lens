@@ -7,60 +7,120 @@ import Combine
 import SwiftUI
 import Translation
 
+/// The one place that knows which languages are downloaded. Shared by the intro window, Settings, the menu,
+/// the selection overlay and the popup, so the status shown everywhere is the same.
 @MainActor final class LanguageDownloads: ObservableObject {
     enum Status: Equatable {
         case checking, ready, needed, unsupported, failed
         case downloading(Double)
     }
 
+    static let shared = LanguageDownloads()
+
     @Published var selected: [String]
+    /// Not in the Tab list, but needed right now — e.g. the language of a scanned text that isn't downloaded yet.
+    @Published var extra: [String] = []
     @Published var status: [String: Status] = [:]
     @Published var config: TranslationSession.Configuration?
     private var queue: [String] = []
-    private(set) var current: String?
+    @Published private(set) var current: String?
     private var ticker: Timer?
+    /// Called when every queued download has finished (or failed).
+    var onIdle: () -> Void = {}
 
     init(selected: [String] = langs.map(\.id)) { self.selected = selected }
 
-    var needed: [String] { selected.filter { status[$0] == .needed || status[$0] == .failed } }
+    /// Every row the intro shows: the chosen languages, then the extra ones.
+    var rows: [String] { selected + extra.filter { !selected.contains($0) } }
+    var needed: [String] { rows.filter { status[$0] == .needed || status[$0] == .failed } }
     var isDownloading: Bool { current != nil }
+    func isReady(_ id: String) -> Bool { status[id] == .ready }
+
+    /// Settings changed the list: follow it.
+    func sync() {
+        selected = langs.map(\.id)
+        extra.removeAll { selected.contains($0) }
+        Task { await refresh() }
+    }
 
     func add(_ id: String) {
         guard !selected.contains(id) else { return }
         selected.append(id)
+        extra.removeAll { $0 == id }
         save()
         Task { await refresh() }
     }
 
     func remove(_ id: String) {
-        guard selected.count > 1, current != id else { return }
-        selected.removeAll { $0 == id }
+        guard rows.count > 1, current != id else { return }
+        if selected.contains(id) {
+            guard selected.count > 1 else { return }
+            selected.removeAll { $0 == id }
+            save()
+        }
+        extra.removeAll { $0 == id }
         queue.removeAll { $0 == id }
-        save()
     }
 
     private func save() { defaults.set(selected, forKey: "languages") }
 
+    /// Make sure these are downloaded: shows them in the intro and starts whatever is missing.
+    func ensure(_ ids: [String]) async {
+        for id in ids where !rows.contains(id) { extra.append(id) }
+        await refresh()
+        for id in ids where status[id] == .needed || status[id] == .failed { download(id) }
+        if current == nil && queue.isEmpty { onIdle() }
+    }
+
     func refresh() async {
-        for id in selected where current != id {
+        for id in rows where current != id {
             if status[id] == nil { status[id] = .checking }
-            status[id] = await check(id)
+            let now = await check(id)
+            if current != id { status[id] = now }
         }
     }
 
     /// A pack is checked (and downloaded) as a pair with English — or, for English itself, with another chosen language.
     func pairSource(for id: String) -> String? {
-        Self.base(id) == "en" ? selected.first { Self.base($0) != "en" } : "en"
+        Self.base(id) == "en" ? rows.first { Self.base($0) != "en" } : "en"
     }
 
     private func check(_ id: String) async -> Status {
         guard let source = pairSource(for: id) else { return .ready }
-        switch await LanguageAvailability().status(from: Locale.Language(identifier: source), to: Locale.Language(identifier: id)) {
-        case .installed: return .ready
-        case .supported: return .needed
-        case .unsupported: return .unsupported
-        @unknown default: return .needed
+        return Self.status(await Self.availability(source, id))
+    }
+
+    static func status(_ s: LanguageAvailability.Status) -> Status {
+        switch s {
+        case .installed: .ready
+        case .supported: .needed
+        case .unsupported: .unsupported
+        @unknown default: .needed
         }
+    }
+
+    static func availability(_ from: String, _ to: String) async -> LanguageAvailability.Status {
+        await LanguageAvailability().status(from: Locale.Language(identifier: from), to: Locale.Language(identifier: to))
+    }
+
+    /// Can this text be translated offline right now? Checked before every translation, so the popup never
+    /// waits on a language that isn't there (macOS can't show its download prompt in the popup).
+    static func pairStatus(source: String?, target: String, text: String) async -> LanguageAvailability.Status {
+        if let source { return await availability(source, target) }
+        do { return try await LanguageAvailability().status(for: text, to: Locale.Language(identifier: target)) }
+        catch { return .installed }       // the language can't be told — let the translation try, the timeout covers it
+    }
+
+    /// Which of these two languages still have to be downloaded (each checked against English).
+    static func missing(source: String?, target: String) async -> [String] {
+        let ids = [source, target].compactMap { $0 }.reduce(into: [String]()) { if !$0.contains($1) { $0.append($1) } }
+        var out: [String] = []
+        for id in ids {
+            let partner = base(id) == "en" ? ids.first { base($0) != "en" } : "en"
+            guard let partner else { continue }
+            if await availability(partner, id) != .installed { out.append(id) }
+        }
+        return out.isEmpty ? ids.filter { base($0) != "en" } : out
     }
 
     func downloadAll() {
@@ -104,6 +164,7 @@ import Translation
         config = nil
         await refresh()          // a pair can bring in more than one language (English, for one)
         next()
+        if current == nil { onIdle() }
     }
 
     /// Eases towards 90 % while the download runs; the last stretch happens when it's actually installed.
@@ -140,15 +201,15 @@ struct IntroView: View {
             .padding(.top, 4)
 
             VStack(spacing: 0) {
-                ForEach(Array(downloads.selected.enumerated()), id: \.element) { index, id in
+                ForEach(Array(downloads.rows.enumerated()), id: \.element) { index, id in
                     if index > 0 { Divider().padding(.leading, 14) }
                     LanguageDownloadRow(lang: makeLang(id), status: downloads.status[id] ?? .checking,
-                                        canRemove: downloads.selected.count > 1 && downloads.current != id,
+                                        canRemove: (downloads.selected.count > 1 || !downloads.selected.contains(id)) && downloads.current != id,
                                         download: { downloads.download(id) }, remove: { downloads.remove(id) })
                 }
                 Divider()
                 Menu {
-                    ForEach(available.filter { !downloads.selected.contains($0) }, id: \.self) { id in
+                    ForEach(available.filter { !downloads.rows.contains($0) }, id: \.self) { id in
                         Button(makeLang(id).name) { downloads.add(id) }
                     }
                 } label: {

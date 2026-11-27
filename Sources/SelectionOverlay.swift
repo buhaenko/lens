@@ -10,8 +10,10 @@ final class OverlayWindow: NSPanel {
     static let topLevel = NSWindow.Level(rawValue: Int(CGShieldingWindowLevel()))
 
     let selection: SelectionView
+    let display: NSScreen
 
     init(screen: NSScreen) {
+        display = screen
         selection = SelectionView(frame: NSRect(origin: .zero, size: screen.frame.size))
         super.init(contentRect: screen.frame, styleMask: [.borderless, .nonactivatingPanel], backing: .buffered, defer: false)
         level = Self.topLevel

@@ -410,6 +410,7 @@ final class UnsafeMutableTransferBox<T>: @unchecked Sendable { var value: T; ini
     } else { skip("screen capture", "the test runner has no Screen Recording permission (Lensy itself does)") }
 
     try? FileManager.default.removeItem(at: tmp)
+    runLanguageStatusTests()
     runRobustnessTests()
     finish("Lensy")
 }

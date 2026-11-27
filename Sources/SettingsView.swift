@@ -8,6 +8,7 @@ import ServiceManagement
 import Carbon.HIToolbox
 
 struct SettingsView: View {
+    @ObservedObject var packs = LanguageDownloads.shared
     @State private var selected: [String] = langs.map(\.id)
     @State private var available: [String] = []
     @State private var tapKey = TapKey.current
@@ -44,7 +45,7 @@ struct SettingsView: View {
                     ForEach(Array(selected.enumerated()), id: \.element) { index, id in
                         VStack(spacing: 0) {
                             if index > 0 { Divider().padding(.leading, 12) }
-                            LanguageRow(lang: makeLang(id), canRemove: selected.count > 1) {
+                            LanguageRow(lang: makeLang(id), status: packs.status[id], canRemove: selected.count > 1) {
                                 selected.removeAll { $0 == id }
                                 save()
                             }
@@ -173,6 +174,7 @@ struct SettingsView: View {
         .frame(width: 440)
         .fixedSize(horizontal: false, vertical: true)
         .task {
+            await packs.refresh()
             let languages = await LanguageAvailability().supportedLanguages
             available = Array(Set(languages.map(\.minimalIdentifier))).sorted { makeLang($0).name.localizedCompare(makeLang($1).name) == .orderedAscending }
         }
@@ -182,7 +184,10 @@ struct SettingsView: View {
         }
     }
 
-    private func save() { defaults.set(selected, forKey: "languages") }
+    private func save() {
+        defaults.set(selected, forKey: "languages")
+        packs.sync()
+    }
 
     // MARK: - Building blocks
 
@@ -249,6 +254,7 @@ struct SettingsView: View {
 /// One target language: code, native name, remove on hover.
 private struct LanguageRow: View {
     let lang: Lang
+    let status: LanguageDownloads.Status?
     let canRemove: Bool
     var remove: () -> Void
     @State private var hover = false
@@ -261,6 +267,21 @@ private struct LanguageRow: View {
                 .frame(width: 30, alignment: .leading)
             Text(lang.name).font(.system(size: 13))
             Spacer()
+            switch status {
+            case .ready:
+                Image(systemName: "checkmark.circle.fill").font(.system(size: 11)).foregroundStyle(.green).help("Downloaded — works offline")
+            case .needed, .failed:
+                Button { NotificationCenter.default.post(name: IntroView.open, object: nil) } label: {
+                    Label("Not downloaded", systemImage: "arrow.down.circle").font(.system(size: 11))
+                }
+                .buttonStyle(.plain).foregroundStyle(.orange).help("Download it, or scans won’t translate into it")
+            case .downloading:
+                ProgressView().controlSize(.mini)
+            case .unsupported:
+                Text("Not available").font(.system(size: 11)).foregroundStyle(.tertiary)
+            case .checking, nil:
+                EmptyView()
+            }
             if canRemove {
                 Button(action: remove) {
                     Image(systemName: "minus.circle").font(.system(size: 12)).foregroundStyle(.tertiary)

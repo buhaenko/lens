@@ -98,7 +98,7 @@ extension AppDelegate: NSWindowDelegate {
         if !capturing && Date().timeIntervalSince(shownAt) > 0.4 { hidePopup() }
     }
 
-    // Tab / ⇧Tab language · ⌘C copy translation · ⌥⌘C copy original · Esc close
+    // Tab / ⇧Tab language · ↩ download / try again · ⌘C copy translation · ⌥⌘C copy original · Esc close
     private func installPopupKeys() {
         removePopupKeys()
         popupKeyMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { [weak self] event in
@@ -109,6 +109,7 @@ extension AppDelegate: NSWindowDelegate {
                 switch code {
                 case kVK_Escape: self.hidePopup()
                 case kVK_Tab: self.model.cycle(mods.contains(.shift) ? -1 : 1)
+                case kVK_Return where self.model.problem != nil, kVK_ANSI_KeypadEnter where self.model.problem != nil: self.model.fix()
                 case kVK_ANSI_C where mods.contains(.command): self.model.copy(original: mods.contains(.option))
                 default: return false
                 }

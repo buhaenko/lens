@@ -29,12 +29,22 @@ extension AppDelegate {
         }
         focusOverlayUnderMouse()
         Crosshair.cursor.set()
+        showLanguageHint()
+        Task { await LanguageDownloads.shared.refresh(); showLanguageHint() }   // a download may have finished meanwhile
 
-        // Esc works even if some other window grabbed the keyboard
+        // Esc works even if some other window grabbed the keyboard; D downloads what the hint says is missing
         overlayKeyMonitor = NSEvent.addLocalMonitorForEvents(matching: .keyDown) { [weak self] event in
-            guard Int(event.keyCode) == kVK_Escape else { return event }
-            MainActor.assumeIsolated { self?.selectionFinished(nil) }
-            return nil
+            let code = Int(event.keyCode)
+            let handled: Bool = MainActor.assumeIsolated {
+                guard let self else { return false }
+                if code == kVK_Escape { self.selectionFinished(nil); return true }
+                let missing = LanguageHint.current(target: self.model.target).toDownload
+                guard code == kVK_ANSI_D, !missing.isEmpty else { return false }
+                self.selectionFinished(nil)
+                self.openIntro(download: missing)
+                return true
+            }
+            return handled ? nil : event
         }
         // Watchdog: if anything covers the overlay, steals focus or swaps the cursor, take it back.
         overlayWatchdog = Timer.scheduledTimer(withTimeInterval: 0.25, repeats: true) { [weak self] _ in
@@ -49,6 +59,12 @@ extension AppDelegate {
         overlayObservers.append(NotificationCenter.default.addObserver(forName: NSApplication.didChangeScreenParametersNotification, object: nil, queue: .main) { [weak self] _ in
             MainActor.assumeIsolated { self?.selectionFinished(nil) }
         })
+    }
+
+    /// The pill at the top of every screen: which language this scan translates into, and whether it's downloaded.
+    func showLanguageHint() {
+        let hint = LanguageHint.current(target: model.target)
+        overlays.forEach { $0.show(hint) }
     }
 
     /// Back on top, focused, with the crosshair.
@@ -97,6 +113,7 @@ extension AppDelegate {
             }
             let text = await recognize(image)
             guard !text.isEmpty else { NSSound.beep(); return }
+            lastAnchor = rect
             model.load(text)
             showPopup(below: rect)
         }

@@ -114,6 +114,7 @@ struct HistoryView: View {
 
 /// Shows what's missing for the shortcut / capture to work, with a button straight to the right Settings pane.
 struct PermissionBanner: View {
+    @ObservedObject var packs = LanguageDownloads.shared
     @State private var hasAccessibility = Permissions.accessibility
     @State private var hasScreenRecording = Permissions.screenRecording
     let timer = Timer.publish(every: 2, on: .main, in: .common).autoconnect()
@@ -122,10 +123,28 @@ struct PermissionBanner: View {
         VStack(spacing: 6) {
             if !hasAccessibility { row("The quick-scan key needs Accessibility", .accessibility) }
             if !hasScreenRecording { row("Scanning needs Screen Recording", .screenRecording) }
+            if !missing.isEmpty { languageRow }
         }
         .padding(.horizontal, 12)
-        .padding(.bottom, (hasAccessibility && hasScreenRecording) ? 0 : 8)
+        .padding(.bottom, (hasAccessibility && hasScreenRecording && missing.isEmpty) ? 0 : 8)
+        .task { await packs.refresh() }
         .onReceive(timer) { _ in hasAccessibility = Permissions.accessibility; hasScreenRecording = Permissions.screenRecording }
+    }
+
+    /// Chosen languages that aren't downloaded — scans into them can't be translated yet.
+    private var missing: [String] { packs.selected.filter { [.needed, .failed].contains(packs.status[$0]) } }
+
+    private var languageRow: some View {
+        HStack(spacing: 8) {
+            Image(systemName: "arrow.down.circle.fill").foregroundStyle(.orange)
+            Text("\(ListFormatter.localizedString(byJoining: missing.map { makeLang($0).name })) \(missing.count == 1 ? "isn’t" : "aren’t") downloaded yet")
+                .font(.system(size: 11)).foregroundStyle(.secondary).lineLimit(2)
+            Spacer()
+            Button("Download") { NotificationCenter.default.post(name: IntroView.open, object: nil) }
+            .buttonStyle(.borderless).font(.system(size: 11, weight: .medium))
+        }
+        .padding(.horizontal, 10).padding(.vertical, 7)
+        .background(RoundedRectangle(cornerRadius: 8, style: .continuous).fill(Color.orange.opacity(0.1)))
     }
 
     func row(_ text: String, _ pane: Permissions.Pane) -> some View {

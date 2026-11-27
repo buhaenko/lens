@@ -27,6 +27,9 @@ import Carbon.HIToolbox
     var anchoredBelow = true
     var shownAt = Date.distantPast
     var popupKeyMonitor: Any?
+    var lastAnchor: NSRect?
+    /// Set when "Download" in the popup opened the languages window: translate again once it's done.
+    var retryAfterDownload: (anchor: NSRect, ids: [String])?
 
     // shortcuts state (see App+Shortcuts)
     var hotKey: EventHotKeyRef?
@@ -42,6 +45,7 @@ import Carbon.HIToolbox
         installEditMenu()
         setUpStatusItem()
         setUpPopupPanel()
+        setUpLanguages()
         NSLog("Lensy: launched \(Updater.currentVersion)")
         if Self.e2e { return }               // end-to-end test copy: no global keys, prompts, windows or update checks
         registerHotKey()
@@ -61,6 +65,28 @@ import Carbon.HIToolbox
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) { self.openIntro() }      // languages + permission, first run only
         } else if !CGPreflightScreenCaptureAccess() {
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) { self.openSettings() }   // show what's missing
+        } else {
+            Task {                                    // the language scans translate into isn't there: nothing would work
+                await LanguageDownloads.shared.refresh()
+                if LanguageHint.current(target: model.target).state == .missing { openIntro() }
+            }
+        }
+    }
+
+    private func setUpLanguages() {
+        let packs = LanguageDownloads.shared
+        Task { await packs.refresh() }
+        model.onDownload = { [weak self] ids in
+            guard let self else { return }
+            hidePopup()
+            openIntro(download: ids, retry: true)
+        }
+        packs.onIdle = { [weak self] in
+            guard let self, let retry = retryAfterDownload, retry.ids.allSatisfy(packs.isReady) else { return }
+            retryAfterDownload = nil
+            introWindow?.close()
+            model.translate()
+            showPopup(below: retry.anchor)
         }
     }
 
@@ -141,6 +167,7 @@ import Carbon.HIToolbox
         menu.addItem(item("Scan & Translate", "text.viewfinder", #selector(capture)))
         menu.addItem(item("Clear History", "trash", #selector(clearHistory)))
         menu.addItem(.separator())
+        menu.addItem(languagesItem())
         menu.addItem(item("Settings…", "gearshape", #selector(openSettings), key: ","))
         menu.addItem(item("Send Feedback…", "envelope", #selector(openFeedback)))
         let update = item("", "", #selector(checkForUpdates))
@@ -171,6 +198,26 @@ import Carbon.HIToolbox
         updateItem.image = NSImage(systemSymbolName: line.symbol, accessibilityDescription: nil)?.withSymbolConfiguration(config ?? .init())
         updateItem.showsImage()
     }
+
+    /// "Languages… · All downloaded" or, in orange, "Українська isn't downloaded".
+    private func languagesItem() -> NSMenuItem {
+        let packs = LanguageDownloads.shared
+        let ids = langs.map(\.id)
+        let missing = ids.filter { [.needed, .failed].contains(packs.status[$0]) }
+        let item = item(missing.isEmpty ? "Languages…" : "Download Languages…", missing.isEmpty ? "globe" : "arrow.down.circle", #selector(openIntroFromMenu))
+        if missing.isEmpty {
+            let ready = ids.allSatisfy(packs.isReady)
+            item.subtitle = ids.map { makeLang($0).code }.joined(separator: " · ") + (ready ? " — all downloaded" : "")
+        } else {
+            let names = ListFormatter.localizedString(byJoining: missing.map { makeLang($0).name })
+            item.subtitle = "\(names) \(missing.count == 1 ? "isn’t" : "aren’t") downloaded — scans won’t translate into \(missing.count == 1 ? "it" : "them")"
+            item.image = item.image?.withSymbolConfiguration(.init(paletteColors: [.systemOrange]))
+            item.showsImage()
+        }
+        return item
+    }
+
+    @objc private func openIntroFromMenu() { openIntro() }
 
     @objc func clearHistory() { History.shared.clear() }
     @objc func checkForUpdates() { Updater.shared.menuAction() }
@@ -220,11 +267,16 @@ import Carbon.HIToolbox
 
     private func closeFeedback() { feedbackWindow?.close() }
 
-    /// Pick languages and download them for offline use — first run, or "Download languages…" in Settings.
-    @objc func openIntro() {
+    /// Pick languages and download them for offline use — first run, "Download languages…" in Settings, the menu,
+    /// D on the selection overlay, or "Download" in the popup (`download`: start these right away).
+    func openIntro(download ids: [String] = [], retry: Bool = false) {
         popover.performClose(nil)
+        retryAfterDownload = retry ? lastAnchor.map { ($0, ids) } : nil
         if introWindow == nil {
-            let host = NSHostingController(rootView: IntroView(downloads: LanguageDownloads()) { [weak self] in self?.introWindow?.close() })
+            let host = NSHostingController(rootView: IntroView(downloads: .shared) { [weak self] in
+                self?.retryAfterDownload = nil
+                self?.introWindow?.close()
+            })
             host.sizingOptions = [.preferredContentSize]
             let window = NSWindow(contentViewController: host)
             window.title = "Welcome to Lensy"
@@ -238,5 +290,6 @@ import Carbon.HIToolbox
         }
         NSApp.activate(ignoringOtherApps: true)
         introWindow?.makeKeyAndOrderFront(nil)
+        if !ids.isEmpty { Task { await LanguageDownloads.shared.ensure(ids) } }
     }
 }
