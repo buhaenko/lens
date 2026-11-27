@@ -148,7 +148,7 @@ import Translation
     let missing = blocking { await LanguageDownloads.missing(source: "ja", target: "en") }
     let jaInstalled = blocking { await LanguageDownloads.availability("en", "ja") } == .installed
     if jaInstalled { expect(true, "Japanese is downloaded on this Mac") }
-    else { expect(missing.contains("ja") && !missing.contains("en"), "names Japanese, not English, as missing (\(missing))") }
+    else { expect(missing.first == "ja", "names Japanese as missing (\(missing) — English too on a Mac with nothing downloaded)") }
     let real = TranslationModel()
     real.target = "en"
     defaults.set(["en", "uk"], forKey: "languages")
