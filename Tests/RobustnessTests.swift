@@ -114,19 +114,7 @@ func noiseImage(_ w: Int, _ h: Int, seed: UInt64) -> CGImage {
     let app = AppDelegate()
     let menu = app.makeStatusMenu()
     let titles = menu.items.filter { !$0.isSeparatorItem }.map(\.title)
-    expectEqual(Array(titles.prefix(5)).map { $0.hasSuffix("Languages…") ? "Languages…" : $0 },
-                ["Scan & Translate", "Clear History", "Languages…", "Settings…", "Send Feedback…"], "menu items in order")
-    let packs = LanguageDownloads.shared, savedStatus = packs.status
-    packs.status = Dictionary(uniqueKeysWithValues: packs.selected.map { ($0, .ready) })
-    var languages = app.makeStatusMenu().items.first { $0.title.hasSuffix("Languages…") }
-    expect(languages?.title == "Languages…" && languages?.subtitle?.contains("all downloaded") == true, "all downloaded: «\(languages?.subtitle ?? "")»")
-    if let first = packs.selected.first {
-        packs.status[first] = .needed
-        languages = app.makeStatusMenu().items.first { $0.title.hasSuffix("Languages…") }
-        expect(languages?.title == "Download Languages…" && languages?.subtitle?.contains(makeLang(first).name) == true,
-               "one missing → the menu names it: «\(languages?.subtitle ?? "")»")
-    }
-    packs.status = savedStatus
+    expectEqual(Array(titles.prefix(4)), ["Scan & Translate", "Clear History", "Settings…", "Send Feedback…"], "menu items in order")
     expectEqual(titles.last, "Quit Lensy", "Quit is last")
     let real = menu.items.filter { !$0.isSeparatorItem }
     expect(real.allSatisfy { $0.image != nil }, "every item has an icon")

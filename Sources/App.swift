@@ -167,7 +167,6 @@ import Carbon.HIToolbox
         menu.addItem(item("Scan & Translate", "text.viewfinder", #selector(capture)))
         menu.addItem(item("Clear History", "trash", #selector(clearHistory)))
         menu.addItem(.separator())
-        menu.addItem(languagesItem())
         menu.addItem(item("Settings…", "gearshape", #selector(openSettings), key: ","))
         menu.addItem(item("Send Feedback…", "envelope", #selector(openFeedback)))
         let update = item("", "", #selector(checkForUpdates))
@@ -198,26 +197,6 @@ import Carbon.HIToolbox
         updateItem.image = NSImage(systemSymbolName: line.symbol, accessibilityDescription: nil)?.withSymbolConfiguration(config ?? .init())
         updateItem.showsImage()
     }
-
-    /// "Languages… · All downloaded" or, in orange, "Українська isn't downloaded".
-    private func languagesItem() -> NSMenuItem {
-        let packs = LanguageDownloads.shared
-        let ids = langs.map(\.id)
-        let missing = ids.filter { [.needed, .failed].contains(packs.status[$0]) }
-        let item = item(missing.isEmpty ? "Languages…" : "Download Languages…", missing.isEmpty ? "globe" : "arrow.down.circle", #selector(openIntroFromMenu))
-        if missing.isEmpty {
-            let ready = ids.allSatisfy(packs.isReady)
-            item.subtitle = ids.map { makeLang($0).code }.joined(separator: " · ") + (ready ? " — all downloaded" : "")
-        } else {
-            let names = ListFormatter.localizedString(byJoining: missing.map { makeLang($0).name })
-            item.subtitle = "\(names) \(missing.count == 1 ? "isn’t" : "aren’t") downloaded — scans won’t translate into \(missing.count == 1 ? "it" : "them")"
-            item.image = item.image?.withSymbolConfiguration(.init(paletteColors: [.systemOrange]))
-            item.showsImage()
-        }
-        return item
-    }
-
-    @objc private func openIntroFromMenu() { openIntro() }
 
     @objc func clearHistory() { History.shared.clear() }
     @objc func checkForUpdates() { Updater.shared.menuAction() }

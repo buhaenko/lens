@@ -269,18 +269,21 @@ private struct LanguageRow: View {
             Spacer()
             switch status {
             case .ready:
-                Image(systemName: "checkmark.circle.fill").font(.system(size: 11)).foregroundStyle(.green).help("Downloaded — works offline")
+                Label("Downloaded", systemImage: "checkmark.circle.fill")
+                    .font(.system(size: 11.5, weight: .medium)).foregroundStyle(.green).help("Works offline")
             case .needed, .failed:
+                Text("Not downloaded").font(.system(size: 11.5, weight: .medium)).foregroundStyle(.orange)
                 Button { NotificationCenter.default.post(name: IntroView.open, object: nil) } label: {
-                    Label("Not downloaded", systemImage: "arrow.down.circle").font(.system(size: 11))
+                    Label("Download", systemImage: "arrow.down.circle").font(.system(size: 11.5))
                 }
-                .buttonStyle(.plain).foregroundStyle(.orange).help("Download it, or scans won’t translate into it")
+                .buttonStyle(.plain).foregroundStyle(Color.accentColor).help("Scans won’t translate into it until it’s downloaded")
             case .downloading:
                 ProgressView().controlSize(.mini)
+                Text("Downloading…").font(.system(size: 11.5)).foregroundStyle(.secondary)
             case .unsupported:
                 Text("Not available").font(.system(size: 11)).foregroundStyle(.tertiary)
             case .checking, nil:
-                EmptyView()
+                Text("Checking…").font(.system(size: 11.5)).foregroundStyle(.tertiary)
             }
             if canRemove {
                 Button(action: remove) {
