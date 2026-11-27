@@ -123,6 +123,23 @@ func noiseImage(_ w: Int, _ h: Int, seed: UInt64) -> CGImage {
            "every item is wired to something that handles it")
     expect(real.first { $0.title == "Send Feedback…" }?.isEnabled == true, "Send Feedback is enabled")
 
+    section("Scan — Lensy's own windows stay out of the way")
+    _ = NSApplication.shared
+    let settings = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 200, height: 100), styleMask: [.titled], backing: .buffered, defer: false)
+    settings.isReleasedWhenClosed = false
+    let closedIntro = NSWindow(contentRect: NSRect(x: 0, y: 0, width: 200, height: 100), styleMask: [.titled], backing: .buffered, defer: false)
+    closedIntro.isReleasedWhenClosed = false
+    app.settingsWindow = settings
+    app.introWindow = closedIntro
+    settings.orderBack(nil)
+    app.tuckAwayWindows()
+    expect(!settings.isVisible, "Settings left open behind other apps doesn't jump over the selection")
+    app.restoreWindows(inFront: false)
+    expect(settings.isVisible, "and is back afterwards")
+    expect(!closedIntro.isVisible, "a closed window stays closed")
+    expect(app.tuckedWindows.isEmpty, "nothing is remembered for the next scan")
+    settings.orderOut(nil)
+
     section("Appearance — light, dark or auto")
     let savedAppearance = defaults.string(forKey: "appearance")
     _ = NSApplication.shared

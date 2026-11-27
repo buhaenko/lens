@@ -19,6 +19,7 @@ extension AppDelegate {
         // The app you were in gets focus back as soon as the selection is done.
         let front = NSWorkspace.shared.frontmostApplication
         previousApp = front == .current ? nil : front
+        tuckAwayWindows()                    // activating Lensy would otherwise pull Settings & co. over what you're scanning
         NSApp.activate(ignoringOtherApps: true)
 
         for screen in NSScreen.screens {
@@ -61,6 +62,19 @@ extension AppDelegate {
         })
     }
 
+    /// Lensy's own open windows (Settings, the intro, Feedback) leave the screen while you select,
+    /// so they never cover the text — and come back where they were afterwards.
+    func tuckAwayWindows() {
+        tuckedWindows = [settingsWindow, introWindow, feedbackWindow].compactMap { $0 }.filter(\.isVisible)
+        tuckedWindows.forEach { $0.orderOut(nil) }
+    }
+
+    /// `inFront`: Lensy was the app you were in, so its windows go back on top; otherwise they go back behind.
+    func restoreWindows(inFront: Bool) {
+        for window in tuckedWindows { inFront ? window.orderFront(nil) : window.orderBack(nil) }
+        tuckedWindows.removeAll()
+    }
+
     /// The pill at the top of every screen: which language this scan translates into, and whether it's downloaded.
     func showLanguageHint() {
         let hint = LanguageHint.current(target: model.target)
@@ -95,6 +109,7 @@ extension AppDelegate {
         overlays.forEach { $0.orderOut(nil) }
         overlays.removeAll()
         NSCursor.arrow.set()
+        restoreWindows(inFront: previousApp == nil)
         previousApp?.activate()
         previousApp = nil
         guard let rect else { capturing = false; return }

@@ -21,6 +21,7 @@ import Carbon.HIToolbox
     var capturing = false
     var captureStartedAt = Date.distantPast
     var previousApp: NSRunningApplication?
+    var tuckedWindows: [NSWindow] = []
     var overlayWatchdog: Timer?
     var overlayKeyMonitor: Any?
     var overlayObservers: [NSObjectProtocol] = []
